@@ -5,6 +5,7 @@ from pdf2image import convert_from_path
 from app.db.session import SessionLocal
 from app.models.document import Document
 from app.services.classification_service import classify_text
+from app.services.automation_service import trigger_workflow
 
 
 def process_document(document_id: int):
@@ -30,8 +31,11 @@ def process_document(document_id: int):
         document.confidence_score = confidence
         document.status = "processed"
         db.commit()
-
+        
         print("STATUS SET TO PROCESSED")
+
+        trigger_workflow(document)
+
 
     except Exception as e:
         print("ERROR:", e)

@@ -11,8 +11,7 @@ from app.models.user import User
 from app.schemas.document import DocumentOut
 from app.core.security import get_current_user
 from app.core.config import settings
-from app.services.ocr_service import process_document
-from app.services.ocr_service import extract_text_from_file
+from app.services.document_pipeline_service import process_document_pipeline
 
 router = APIRouter(prefix="/documents", tags=["Documents"])
 
@@ -49,7 +48,7 @@ def upload_document(
     db.add(new_document)
     db.commit()
     db.refresh(new_document)
-    background_tasks.add_task(process_document, new_document.id)
+    background_tasks.add_task(process_document_pipeline, new_document.id)
 
     return new_document
 

@@ -1,3 +1,13 @@
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+
+from app.db.deps import get_db
+from app.models.extracted_field import ExtractedField
+
+
+router = APIRouter(prefix="/review", tags=["Review"])
+
+
 @router.get("/document/{doc_id}")
 def get_extracted_fields(doc_id: int, db: Session = Depends(get_db)):
     fields = db.query(ExtractedField).filter(

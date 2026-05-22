@@ -1,9 +1,9 @@
 from fastapi import FastAPI
-from app.routes import documents, auth
+from app.routes import documents, auth, review
 
 import logging
 
-# ✅ Proper logging configuration
+# Proper logging configuration
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
@@ -16,6 +16,7 @@ app = FastAPI(title="Smart Document Workflow AI")
 # Routers
 app.include_router(auth.router)
 app.include_router(documents.router)
+app.include_router(review.router)
 
 # Root route
 @app.get("/")

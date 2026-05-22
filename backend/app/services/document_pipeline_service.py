@@ -6,6 +6,8 @@ from app.services.automation_service import trigger_workflow
 from app.db.session import SessionLocal
 from app.models.document import Document
 from app.models.extracted_field import ExtractedField
+from app.models.notification import Notification
+from app.models.automation_log import AutomationLog
 
 import logging
 
@@ -13,7 +15,6 @@ logger = logging.getLogger(__name__)
 
 def process_document_pipeline(document_id: int):
     db = SessionLocal()
-
     document = None
 
     try:
@@ -28,24 +29,22 @@ def process_document_pipeline(document_id: int):
         document.status = "processing"
         db.commit()
 
-        # 🔹 1. OCR
+        # 1. OCR
         text = run_ocr(document.file_path)
         document.raw_text = text
 
-        # 🔹 2. Classification
+        # 2. Classification
         label, confidence = classify_text(text)
         document.document_type = label
         document.confidence_score = confidence
 
         logger.info(f"Classified as {label} ({confidence})")
 
-        # 🔹 3. Extraction
+        # 3. Extraction
         extracted_data = extract_fields(label, text)
-
-
         logger.info(f"Extracted data: {extracted_data}")
 
-        # 🔥 SAVE TO DB
+        # 4. SAVE TO DB
         for field_name, field_value in extracted_data.items():
             field = ExtractedField(
                 document_id=document.id,
@@ -53,14 +52,45 @@ def process_document_pipeline(document_id: int):
                 field_value=field_value
             )
             db.add(field)
-        
+
         db.commit()
 
-        # 🔹 Save status
-        document.status = "processed"
+        # 5. Confidence-based status
+        if confidence < 0.7:
+            document.status = "needs_review"
+        else:
+            document.status = "processed"
+
         db.commit()
 
-        # 🔹 4. Workflow
+        # 6. Create Notification
+        notification = Notification(
+            user_id=document.user_id,
+            title="Document Processed",
+            message=f"Your document '{document.original_filename}' has been processed and requires review."
+        )
+        db.add(notification)
+
+        # 7. Automation Log
+        log = AutomationLog(
+            document_id=document.id,
+            action_type=f"{label} processed",
+            status="success"
+        )
+        db.add(log)
+
+        db.commit()
+
+        # 8. Only trigger workflow if verified data exists
+        verified_fields = [
+            f for f in document.extracted_fields if f.is_verified
+        ]
+
+        if not verified_fields:
+            logger.warning("No verified data, skipping workflow")
+            return
+
+        # 9. Workflow
         trigger_workflow(document)
 
         logger.info(f"Pipeline completed for doc {document.id}")

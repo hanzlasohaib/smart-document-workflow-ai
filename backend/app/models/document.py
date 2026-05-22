@@ -22,5 +22,7 @@ class Document(Base):
 
     raw_text = Column(Text, nullable=True)
 
+    approval_status = Column(String, default="pending")  # pending / approved / rejected
+
     user = relationship("User", back_populates="documents")
 

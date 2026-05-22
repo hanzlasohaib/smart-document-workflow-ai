@@ -52,6 +52,51 @@ def upload_document(
 
     return new_document
 
+@router.post("/{id}/approve")
+def approve_document(
+    id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    document = db.query(Document).filter(Document.id == id).first()
+
+    if not document:
+        raise HTTPException(status_code=404, detail="Document not found")
+
+    document.approval_status = "approved"
+    db.commit()
+
+    return {"message": "Document approved"}
+
+
+@router.post("/{id}/reject")
+def reject_document(
+    id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    document = db.query(Document).filter(Document.id == id).first()
+
+    if not document:
+        raise HTTPException(status_code=404, detail="Document not found")
+
+    document.approval_status = "rejected"
+    db.commit()
+
+    return {"message": "Document rejected"}
+
+
+@router.get("/pending", response_model=List[DocumentOut])
+def get_pending_documents(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    documents = db.query(Document).filter(
+        Document.approval_status == "pending"
+    ).all()
+
+    return documents
+
 @router.get("/my", response_model=List[DocumentOut])
 def get_my_documents(
     db: Session = Depends(get_db),

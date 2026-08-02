@@ -1,5 +1,13 @@
 # Virtual environment
 venv/
+.venv/
+backend/venv/
+
+# Test artifacts
+backend/tests/_uploads/
+backend/uploads_ci/
+*.db
+
 
 # Python cache
 __pycache__/

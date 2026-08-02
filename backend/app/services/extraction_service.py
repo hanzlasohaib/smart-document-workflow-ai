@@ -66,7 +66,12 @@ def extract_resume_fields(text: str):
                 or any(word in blacklist_words for word in words)
             ):
                 continue
-# -------- FALLBACK NAME -------- #
+
+            data["name"] = candidate
+            found_name = True
+            break
+
+    # -------- FALLBACK NAME -------- #
     if not found_name:
         first_lines = text.split("\n")[:7]
 

@@ -1,23 +1,24 @@
 import os
 import uuid
-from fastapi import APIRouter, HTTPException, UploadFile, File, Depends, BackgroundTasks
-from sqlalchemy.orm import Session
 from typing import List
 
+from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, UploadFile
+from sqlalchemy.orm import Session
+
+from app.core.config import settings
+from app.core.deps import require_admin
+from app.core.security import get_current_user
 from app.db.deps import get_db
-from app.db.session import SessionLocal
 from app.models.document import Document
 from app.models.user import User
 from app.schemas.document import DocumentOut
-from app.core.security import get_current_user
-from app.core.config import settings
 from app.services.document_pipeline_service import process_document_pipeline
+from app.services.notification_service import emit_document_event
+from app.services.workflow_gates import maybe_run_workflow
 
 router = APIRouter(prefix="/documents", tags=["Documents"])
 
-
 UPLOAD_DIR = settings.UPLOAD_DIR
-
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 
@@ -26,23 +27,20 @@ def upload_document(
     background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ):
-    # Generate unique filename
     unique_filename = f"{uuid.uuid4()}_{file.filename}"
     file_path = os.path.join(UPLOAD_DIR, unique_filename)
 
-    # Save file to disk
     with open(file_path, "wb") as buffer:
         buffer.write(file.file.read())
 
-    # Create DB record
     new_document = Document(
         user_id=current_user.id,
         original_filename=file.filename,
         stored_filename=unique_filename,
         file_path=file_path,
-        status="uploaded"
+        status="uploaded",
     )
 
     db.add(new_document)
@@ -52,19 +50,23 @@ def upload_document(
 
     return new_document
 
+
 @router.post("/{id}/approve")
 def approve_document(
     id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    _: User = Depends(require_admin),
 ):
     document = db.query(Document).filter(Document.id == id).first()
-
     if not document:
         raise HTTPException(status_code=404, detail="Document not found")
 
     document.approval_status = "approved"
     db.commit()
+    db.refresh(document)
+
+    emit_document_event(db, document, "document.approved")
+    maybe_run_workflow(db, document)
 
     return {"message": "Document approved"}
 
@@ -73,15 +75,17 @@ def approve_document(
 def reject_document(
     id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    _: User = Depends(require_admin),
 ):
     document = db.query(Document).filter(Document.id == id).first()
-
     if not document:
         raise HTTPException(status_code=404, detail="Document not found")
 
     document.approval_status = "rejected"
     db.commit()
+    db.refresh(document)
+
+    emit_document_event(db, document, "document.rejected")
 
     return {"message": "Document rejected"}
 
@@ -89,32 +93,30 @@ def reject_document(
 @router.get("/pending", response_model=List[DocumentOut])
 def get_pending_documents(
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    _: User = Depends(require_admin),
 ):
-    documents = db.query(Document).filter(
-        Document.approval_status == "pending"
-    ).all()
+    return (
+        db.query(Document)
+        .filter(Document.approval_status == "pending")
+        .all()
+    )
 
-    return documents
 
 @router.get("/my", response_model=List[DocumentOut])
 def get_my_documents(
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ):
-    documents = db.query(Document).filter(
-        Document.user_id == current_user.id
-    ).all()
+    return (
+        db.query(Document)
+        .filter(Document.user_id == current_user.id)
+        .all()
+    )
 
-    return documents
 
 @router.get("/", response_model=list[DocumentOut])
 def get_all_documents(
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    _: User = Depends(require_admin),
 ):
-    if current_user.role != "admin":
-        raise HTTPException(status_code=403, detail="Not authorized")
-
-    documents = db.query(Document).all()
-    return documents
+    return db.query(Document).all()

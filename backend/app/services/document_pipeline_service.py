@@ -1,17 +1,17 @@
-from app.services.ocr_service import run_ocr
-from app.services.classification_service import classify_text
-from app.services.extraction_service import extract_fields
-from app.services.automation_service import trigger_workflow
-
-from app.db.session import SessionLocal
-from app.models.document import Document
-from app.models.extracted_field import ExtractedField
-from app.models.notification import Notification
-from app.models.automation_log import AutomationLog
-
 import logging
 
+from app.core.config import settings
+from app.db.session import SessionLocal
+from app.models.automation_log import AutomationLog
+from app.models.document import Document
+from app.models.extracted_field import ExtractedField
+from app.services.classification_service import classify_text
+from app.services.extraction_service import extract_fields
+from app.services.notification_service import emit_document_event, event_for_status
+from app.services.ocr_service import run_ocr
+
 logger = logging.getLogger(__name__)
+
 
 def process_document_pipeline(document_id: int):
     db = SessionLocal()
@@ -19,90 +19,145 @@ def process_document_pipeline(document_id: int):
 
     try:
         document = db.query(Document).filter(Document.id == document_id).first()
-
         if not document:
-            logger.error("Document not found")
+            logger.error("Document not found: %s", document_id)
             return
 
-        logger.info(f"Pipeline started for doc {document.id}")
+        logger.info("Pipeline started for doc %s", document.id)
 
         document.status = "processing"
+        db.commit()
+
+        db.add(
+            AutomationLog(
+                document_id=document.id,
+                action_type="processing.started",
+                status="success",
+            )
+        )
         db.commit()
 
         # 1. OCR
         text = run_ocr(document.file_path)
         document.raw_text = text
+        db.commit()
+
+        db.add(
+            AutomationLog(
+                document_id=document.id,
+                action_type="ocr.completed",
+                status="success",
+            )
+        )
+        db.commit()
+
+        # Empty / near-empty OCR → needs_review (PAS-04)
+        if not text or not text.strip():
+            document.status = "needs_review"
+            document.document_type = None
+            document.confidence_score = 0.0
+            db.commit()
+            emit_document_event(db, document, "document.needs_review")
+            db.add(
+                AutomationLog(
+                    document_id=document.id,
+                    action_type="confidence.decision",
+                    status="needs_review_empty_ocr",
+                )
+            )
+            db.commit()
+            logger.warning("Empty OCR for doc %s; needs_review", document.id)
+            return
 
         # 2. Classification
         label, confidence = classify_text(text)
         document.document_type = label
         document.confidence_score = confidence
+        logger.info("Classified as %s (%s)", label, confidence)
 
-        logger.info(f"Classified as {label} ({confidence})")
+        db.add(
+            AutomationLog(
+                document_id=document.id,
+                action_type="classified",
+                status="success",
+            )
+        )
+        db.commit()
 
         # 3. Extraction
         extracted_data = extract_fields(label, text)
-        logger.info(f"Extracted data: {extracted_data}")
+        logger.info("Extracted data: %s", extracted_data)
 
-        # 4. SAVE TO DB
         for field_name, field_value in extracted_data.items():
-            field = ExtractedField(
-                document_id=document.id,
-                field_name=field_name,
-                field_value=field_value
+            db.add(
+                ExtractedField(
+                    document_id=document.id,
+                    field_name=field_name,
+                    field_value=field_value,
+                )
             )
-            db.add(field)
-
         db.commit()
 
-        # 5. Confidence-based status
-        if confidence < 0.7:
+        db.add(
+            AutomationLog(
+                document_id=document.id,
+                action_type="extracted",
+                status=f"fields={len(extracted_data)}",
+            )
+        )
+        db.commit()
+
+        # 4. Confidence-based status (no workflow on first pass)
+        threshold = settings.CONFIDENCE_THRESHOLD
+        if confidence < threshold:
             document.status = "needs_review"
         else:
             document.status = "processed"
-
         db.commit()
 
-        # 6. Create Notification
-        notification = Notification(
-            user_id=document.user_id,
-            title="Document Processed",
-            message=f"Your document '{document.original_filename}' has been processed and requires review."
+        db.add(
+            AutomationLog(
+                document_id=document.id,
+                action_type="confidence.decision",
+                status=document.status,
+            )
         )
-        db.add(notification)
-
-        # 7. Automation Log
-        log = AutomationLog(
-            document_id=document.id,
-            action_type=f"{label} processed",
-            status="success"
-        )
-        db.add(log)
-
         db.commit()
 
-        # 8. Only trigger workflow if verified data exists
-        verified_fields = [
-            f for f in document.extracted_fields if f.is_verified
-        ]
+        event = event_for_status(document.status)
+        if event:
+            emit_document_event(db, document, event)
 
-        if not verified_fields:
-            logger.warning("No verified data, skipping workflow")
-            return
+        # Workflow is deferred until verify + approval gates (PAS-04).
+        db.add(
+            AutomationLog(
+                document_id=document.id,
+                action_type="workflow.skipped",
+                status="awaiting_gates",
+            )
+        )
+        db.commit()
 
-        # 9. Workflow
-        trigger_workflow(document)
+        logger.info("Pipeline completed for doc %s (status=%s)", document.id, document.status)
 
-        logger.info(f"Pipeline completed for doc {document.id}")
-
-    except Exception as e:
-        logger.error(f"Pipeline failed: {str(e)}")
-
+    except Exception as exc:
+        logger.error("Pipeline failed: %s", exc)
         db.rollback()
 
         if document:
-            document.status = "failed"
-            db.commit()
+            document = db.query(Document).filter(Document.id == document_id).first()
+            if document:
+                document.status = "failed"
+                db.commit()
+                emit_document_event(db, document, "document.failed")
+                db.add(
+                    AutomationLog(
+                        document_id=document.id,
+                        action_type="pipeline.failed",
+                        status="failed",
+                    )
+                )
+                db.commit()
 
     finally:
         db.close()

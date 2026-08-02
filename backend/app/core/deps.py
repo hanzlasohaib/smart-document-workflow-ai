@@ -1,31 +1,63 @@
+"""Shared authentication and authorization dependencies (PAS-03)."""
+
 from fastapi import Depends, HTTPException, status
-from jose import JWTError, jwt
-from app.core.security import SECRET_KEY, ALGORITHM
-from app.db.deps import get_db
-from app.models.user import User
 from sqlalchemy.orm import Session
 
-from fastapi.security import OAuth2PasswordBearer
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
-
-
-def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        user_id: str = payload.get("sub")
-        if user_id is None:
-            raise HTTPException(status_code=401, detail="Invalid token")
-    except JWTError:
-        raise HTTPException(status_code=401, detail="Invalid token")
-
-    user = db.query(User).filter(User.id == int(user_id)).first()
-    if user is None:
-        raise HTTPException(status_code=401, detail="User not found")
-    return user
+from app.core.security import get_current_user
+from app.db.deps import get_db
+from app.models.document import Document
+from app.models.extracted_field import ExtractedField
+from app.models.user import User
 
 
-def require_admin(current_user: User = Depends(get_current_user)):
+def require_admin(current_user: User = Depends(get_current_user)) -> User:
     if current_user.role != "admin":
-        raise HTTPException(status_code=403, detail="Admin access required")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin access required",
+        )
     return current_user
+
+
+def get_owned_or_admin_document(
+    doc_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> Document:
+    document = db.query(Document).filter(Document.id == doc_id).first()
+    if not document:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Document not found",
+        )
+    if current_user.role != "admin" and document.user_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized",
+        )
+    return document
+
+
+def get_owned_or_admin_field(
+    field_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> ExtractedField:
+    field = db.query(ExtractedField).filter(ExtractedField.id == field_id).first()
+    if not field:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Field not found",
+        )
+    document = db.query(Document).filter(Document.id == field.document_id).first()
+    if not document:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Document not found",
+        )
+    if current_user.role != "admin" and document.user_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized",
+        )
+    return field

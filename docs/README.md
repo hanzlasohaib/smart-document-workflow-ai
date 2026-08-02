@@ -4,7 +4,8 @@ Project documentation for **Smart Document Workflow AI**.
 
 | Area | Path | Role |
 |---|---|---|
-| Implementation audit | [audit/AUDIT_REPORT.md](./audit/AUDIT_REPORT.md) | Source of truth for the **current** codebase |
+| Implementation roadmap | [IMPLEMENTATION_ROADMAP.md](./IMPLEMENTATION_ROADMAP.md) | P0–P3 execution checklist and branching |
+| Implementation audit | [audit/AUDIT_REPORT.md](./audit/AUDIT_REPORT.md) | Source of truth for the **audited** codebase baseline |
 | Product Architecture Specification | [pas/README.md](./pas/README.md) | Authoritative architectural source of truth (**PAS 1.0.0 Frozen**) |
 | PAS writing rules | [pas/DOCUMENTATION_STANDARDS.md](./pas/DOCUMENTATION_STANDARDS.md) | Mandatory template, ADR schema, standards |
 | Diagrams | [architecture/diagrams/](./architecture/diagrams/) | Mermaid sources / exported architecture diagrams |
@@ -17,7 +18,7 @@ Project documentation for **Smart Document Workflow AI**.
 3. Treat PAS-01 through PAS-06 (**Frozen 1.0.0**) as binding for implementation.
 4. Every PAS change must follow [pas/DOCUMENTATION_STANDARDS.md](./pas/DOCUMENTATION_STANDARDS.md) (semver + changelog).
 5. Index Accepted/Superseded ADRs in [pas/appendices/B-decision-log.md](./pas/appendices/B-decision-log.md).
-6. Begin delivery at **P0 Stabilize** per [pas/06-engineering-and-operations.md](./pas/06-engineering-and-operations.md).
+6. Follow delivery phases in [IMPLEMENTATION_ROADMAP.md](./IMPLEMENTATION_ROADMAP.md) (starts at **P0 Stabilize** per [pas/06-engineering-and-operations.md](./pas/06-engineering-and-operations.md)).
 
 ## Status
 

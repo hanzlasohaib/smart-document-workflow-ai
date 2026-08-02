@@ -17,3 +17,6 @@ backend/uploads/
 
 # Current Folder Structure
 current.txt
+
+# vscode settings
+.vscode/

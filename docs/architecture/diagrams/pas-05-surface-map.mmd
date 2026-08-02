@@ -1,0 +1,32 @@
+flowchart TB
+  subgraph marketing [MarketingShell]
+    Landing[Landing]
+    Features[Features]
+    Pricing[Pricing]
+    About[About]
+    Preview[DashboardPreview]
+  end
+  subgraph auth [AuthShell]
+    Login[Login]
+    Signup[Signup]
+  end
+  subgraph userPortal [UserPortal]
+    UserDash[UserDashboard]
+    Upload[Upload]
+    MyDocs[MyDocuments]
+    DocDetail[DocumentDetailReview]
+    Notifs[Notifications]
+    Profile[Profile]
+  end
+  subgraph adminPortal [AdminPortal]
+    AdminDash[AdminDashboard]
+    AllDocs[AllDocuments]
+    Pending[PendingApprovals]
+    AdminReview[CrossUserReview]
+  end
+
+  Landing --> Login
+  Preview --> Login
+  Login --> UserDash
+  Login --> AdminDash
+  Signup --> UserDash

@@ -1,0 +1,15 @@
+flowchart LR
+  Browser[Browser]
+  NextApp[NextjsApp]
+  ApiApp[FastAPIApp]
+  Pg[(PostgreSQL)]
+  Storage[SupabaseStorage]
+  Jobs[BackgroundJobs]
+
+  Browser --> NextApp
+  NextApp --> ApiApp
+  ApiApp --> Pg
+  ApiApp --> Storage
+  ApiApp --> Jobs
+  Jobs --> Pg
+  Jobs --> Storage

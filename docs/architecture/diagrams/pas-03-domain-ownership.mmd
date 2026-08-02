@@ -1,0 +1,12 @@
+flowchart LR
+  User[User]
+  Doc[Document]
+  Field[ExtractedField]
+  Notif[Notification]
+  Log[AutomationLog]
+
+  User -->|owns| Doc
+  Doc -->|owns| Field
+  Doc -->|generates| Log
+  User -->|receives| Notif
+  Doc -.->|may trigger| Notif

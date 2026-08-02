@@ -1,0 +1,16 @@
+sequenceDiagram
+  participant Browser
+  participant Nextjs
+  participant Bff as NextBffAuth
+  participant Api as FastAPIv1
+
+  Browser->>Nextjs: Hit protected route unauthenticated
+  Nextjs->>Browser: Redirect Login with returnUrl
+  Browser->>Nextjs: Submit Login
+  Nextjs->>Bff: Proxy credentials
+  Bff->>Api: Auth login
+  Api-->>Bff: Access plus refresh
+  Bff-->>Browser: Set httpOnly refresh cookie; return access to client memory
+  Browser->>Api: GET me with Bearer access
+  Api-->>Browser: User plus role
+  Browser->>Nextjs: Route to User or Admin dashboard

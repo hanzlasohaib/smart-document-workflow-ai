@@ -1,0 +1,28 @@
+flowchart TD
+  Accept[AcceptDocument]
+  Proc[SetProcessing]
+  Ocr[OCR]
+  Cls[Classify]
+  Ext[Extract]
+  Persist[PersistFields]
+  Conf[ApplyConfidencePolicy]
+  Notify[EmitNotifications]
+  Log[AppendAutomationLog]
+  Gate[ReviewAndApprovalGates]
+  Flow[TriggerWorkflow]
+  Fail[MarkFailed]
+
+  Accept --> Proc
+  Proc --> Ocr
+  Ocr --> Cls
+  Cls --> Ext
+  Ext --> Persist
+  Persist --> Conf
+  Conf --> Notify
+  Notify --> Log
+  Log --> Gate
+  Gate -->|gates satisfied| Flow
+  Gate -->|gates not satisfied| WaitReview[AwaitHumanActions]
+  Ocr -->|unrecoverable error| Fail
+  Cls -->|unrecoverable error| Fail
+  Ext -->|unrecoverable error| Fail

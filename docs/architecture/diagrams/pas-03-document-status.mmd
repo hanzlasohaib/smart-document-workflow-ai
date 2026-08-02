@@ -1,0 +1,10 @@
+stateDiagram-v2
+  [*] --> uploaded
+  uploaded --> processing
+  processing --> processed
+  processing --> needs_review
+  processing --> failed
+  needs_review --> processed
+  processed --> archived
+  needs_review --> archived
+  failed --> processing

@@ -577,7 +577,7 @@ Workflow Automation
 
 ## Planned Enhancements
 
-- React Frontend Dashboard
+- Next.js Frontend Dashboard
 - Celery + Redis async processing
 - Real-time notifications using WebSockets
 - Event-driven architecture

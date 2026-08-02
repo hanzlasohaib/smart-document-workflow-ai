@@ -1,0 +1,15 @@
+sequenceDiagram
+  participant Browser
+  participant Nextjs
+  participant FastAPI
+  participant Storage as SupabaseStorage
+  participant Pg as PostgreSQL
+  participant Jobs as BackgroundJobs
+
+  Browser->>Nextjs: User action
+  Nextjs->>FastAPI: REST /api/v1/...
+  FastAPI->>Storage: Store or fetch object
+  FastAPI->>Pg: Persist metadata
+  FastAPI->>Jobs: Enqueue or schedule processing
+  FastAPI-->>Nextjs: JSON response
+  Nextjs-->>Browser: Rendered UI

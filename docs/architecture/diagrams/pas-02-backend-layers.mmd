@@ -1,0 +1,29 @@
+flowchart TB
+  subgraph presentation [PresentationLayer]
+    Routes[HTTPRoutes]
+    Schemas[RequestResponseSchemas]
+  end
+  subgraph application [ApplicationLayer]
+    Services[ApplicationServices]
+    Orchestrators[PipelineOrchestration]
+  end
+  subgraph domain [DomainAndPersistence]
+    Models[DomainModels]
+    Repos[PersistenceAccess]
+  end
+  subgraph infra [Infrastructure]
+    DbAdapter[PostgreSQLAdapter]
+    StorageAdapter[SupabaseStorageAdapter]
+    AiAdapters[OCR_ML_NLPAdapters]
+    JobAdapter[JobRunnerAdapter]
+  end
+
+  Routes --> Services
+  Routes --> Schemas
+  Services --> Orchestrators
+  Services --> Models
+  Services --> Repos
+  Orchestrators --> AiAdapters
+  Repos --> DbAdapter
+  Services --> StorageAdapter
+  Services --> JobAdapter

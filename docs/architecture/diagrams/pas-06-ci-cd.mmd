@@ -1,0 +1,12 @@
+flowchart LR
+  PR[PullRequest]
+  Lint[Lint]
+  Test[Test]
+  Build[BuildImages]
+  MigrateDry[MigrationCheck]
+  DeployStaging[DeployStaging]
+  Smoke[SmokeChecks]
+  DeployProd[DeployProduction]
+
+  PR --> Lint --> Test --> Build --> MigrateDry
+  Build --> DeployStaging --> Smoke --> DeployProd

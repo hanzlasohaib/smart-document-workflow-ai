@@ -6,9 +6,9 @@ Optional local helper. Prefer Alembic for schema changes:
 Do not use create_all as the production migration path (PAS-03 ADR-03-005).
 """
 
+import app.db.models  # noqa: F401
 from app.db.base import Base
 from app.db.session import engine
-import app.db.models  # noqa: F401
 
 
 def init_db():

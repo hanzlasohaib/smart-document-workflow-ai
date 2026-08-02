@@ -9,6 +9,7 @@ from app.services.classification_service import classify_text
 from app.services.extraction_service import extract_fields
 from app.services.notification_service import emit_document_event, event_for_status
 from app.services.ocr_service import run_ocr
+from app.services.storage import get_storage
 
 logger = logging.getLogger(__name__)
 
@@ -37,8 +38,9 @@ def process_document_pipeline(document_id: int):
         )
         db.commit()
 
-        # 1. OCR
-        text = run_ocr(document.file_path)
+        # 1. OCR (resolve storage key to a local path for OCR tools)
+        local_path = get_storage().resolve_local_path(document.file_path)
+        text = run_ocr(local_path)
         document.raw_text = text
         db.commit()
 

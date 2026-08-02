@@ -1,6 +1,7 @@
 import pytesseract
-from PIL import Image
 from pdf2image import convert_from_path
+from PIL import Image
+
 
 def run_ocr(file_path: str) -> str:
     text_output = ""

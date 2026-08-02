@@ -1,0 +1,49 @@
+# Local / parity stack (PAS-06): API + PostgreSQL
+# 1. cp backend/.env.example backend/.env  (set SECRET_KEY at minimum)
+# 2. docker compose up --build
+# 3. Optional admin: docker compose exec api python -m scripts.seed_admin
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: sdw
+      POSTGRES_PASSWORD: sdw
+      POSTGRES_DB: smart_docs
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sdw -d smart_docs"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      SECRET_KEY: ${SECRET_KEY:-dev-only-change-me}
+      DATABASE_URL: postgresql://sdw:sdw@db:5432/smart_docs
+      UPLOAD_DIR: /app/uploads
+      STORAGE_BACKEND: local
+      ACCESS_TOKEN_EXPIRE_MINUTES: "15"
+      REFRESH_TOKEN_EXPIRE_DAYS: "7"
+      CONFIDENCE_THRESHOLD: "0.70"
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@example.com}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-changeme}
+      ADMIN_NAME: ${ADMIN_NAME:-Administrator}
+    volumes:
+      - uploads:/app/uploads
+      - ./backend/document_classifier.pkl:/app/document_classifier.pkl:ro
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+  uploads:

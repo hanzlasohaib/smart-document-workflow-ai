@@ -1,25 +1,21 @@
-import os
 import uuid
 from typing import List
 
 from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, UploadFile
 from sqlalchemy.orm import Session
 
-from app.core.config import settings
 from app.core.deps import require_admin
 from app.core.security import get_current_user
 from app.db.deps import get_db
 from app.models.document import Document
 from app.models.user import User
 from app.schemas.document import DocumentOut
-from app.services.document_pipeline_service import process_document_pipeline
+from app.services.jobs import enqueue_document_processing
 from app.services.notification_service import emit_document_event
+from app.services.storage import get_storage
 from app.services.workflow_gates import maybe_run_workflow
 
 router = APIRouter(prefix="/documents", tags=["Documents"])
-
-UPLOAD_DIR = settings.UPLOAD_DIR
-os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 
 @router.post("/upload", response_model=DocumentOut)
@@ -30,23 +26,21 @@ def upload_document(
     current_user: User = Depends(get_current_user),
 ):
     unique_filename = f"{uuid.uuid4()}_{file.filename}"
-    file_path = os.path.join(UPLOAD_DIR, unique_filename)
-
-    with open(file_path, "wb") as buffer:
-        buffer.write(file.file.read())
+    storage = get_storage()
+    storage_key = storage.save(file.file.read(), unique_filename)
 
     new_document = Document(
         user_id=current_user.id,
         original_filename=file.filename,
         stored_filename=unique_filename,
-        file_path=file_path,
+        file_path=storage_key,
         status="uploaded",
     )
 
     db.add(new_document)
     db.commit()
     db.refresh(new_document)
-    background_tasks.add_task(process_document_pipeline, new_document.id)
+    enqueue_document_processing(new_document.id, background_tasks)
 
     return new_document
 

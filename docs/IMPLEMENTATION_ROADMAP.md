@@ -42,11 +42,11 @@ flowchart LR
 
 ---
 
-## P0 — Stabilize *(current)*
+## P0 — Stabilize *(merged)*
 
 **Intent:** Make the existing backend trustworthy for multi-user use. No full frontend yet.
 
-**Branch:** `feature/p0-stabilize`
+**Branch:** `feature/p0-stabilize` → merged to `main`
 
 ### Work packages (suggested order)
 
@@ -86,9 +86,11 @@ Enforce server-side for at least:
 
 ---
 
-## P1 — SaaS foundations
+## P1 — SaaS foundations *(current)*
 
 **Intent:** Platform shape required by PAS-02/03 before portals.
+
+**Branch:** `feature/p1-saas-foundations`
 
 | # | Work package | PAS | Concrete outcomes |
 |---|---|---|---|
@@ -103,11 +105,13 @@ Enforce server-side for at least:
 
 ### P1 Definition of Done
 
-- [ ] Access + refresh auth; rotation works; inactive users blocked
-- [ ] Binaries via storage adapter (Supabase in staging/prod config)
-- [ ] Compose brings up API + DB with documented commands
-- [ ] CI blocks merge on failing tests/lint
-- [ ] Admin seed documented and repeatable for staging
+- [x] Access + refresh auth; rotation works; inactive users blocked
+- [x] Binaries via storage adapter (Supabase in staging/prod config)
+- [x] Compose brings up API + DB with documented commands
+- [x] CI blocks merge on failing tests/lint
+- [x] Admin seed documented and repeatable for staging
+
+> Confirm with `pytest -q` and CI green on `feature/p1-saas-foundations` before merging to `main`.
 
 **Exit:** Merge phase branch → `main`, then cut `feature/p2-product-surfaces`.
 

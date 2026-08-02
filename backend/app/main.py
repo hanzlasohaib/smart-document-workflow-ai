@@ -3,6 +3,7 @@ import logging
 from fastapi import FastAPI, Response, status
 from sqlalchemy import text
 
+from app.api.v1 import api_router
 from app.db.session import engine
 from app.routes import auth, documents, review
 
@@ -15,14 +16,23 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Smart Document Workflow AI")
 
-app.include_router(auth.router)
-app.include_router(documents.router)
-app.include_router(review.router)
+# Canonical versioned API (PAS-02)
+app.include_router(api_router)
+
+# Temporary unversioned shims for P0 clients (prefer /api/v1)
+app.include_router(auth.router, deprecated=True)
+app.include_router(documents.router, deprecated=True)
+app.include_router(review.router, deprecated=True)
 
 
 @app.get("/")
 def read_root():
-    return {"message": "API is running"}
+    return {
+        "message": "API is running",
+        "api": "/api/v1",
+        "docs": "/docs",
+        "health": "/health",
+    }
 
 
 @app.get("/health")

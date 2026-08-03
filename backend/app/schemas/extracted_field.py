@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 
+
 class ExtractedFieldOut(BaseModel):
     field_name: str
     field_value: str

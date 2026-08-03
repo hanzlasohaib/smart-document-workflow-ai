@@ -5,7 +5,10 @@ from pathlib import Path
 os.environ["SECRET_KEY"] = "test-secret-key"
 os.environ["DATABASE_URL"] = "sqlite+pysqlite:///:memory:"
 os.environ["UPLOAD_DIR"] = str(Path(__file__).resolve().parent / "_uploads")
+os.environ["STORAGE_BACKEND"] = "local"
 os.environ["CONFIDENCE_THRESHOLD"] = "0.70"
+os.environ["ACCESS_TOKEN_EXPIRE_MINUTES"] = "15"
+os.environ["REFRESH_TOKEN_EXPIRE_DAYS"] = "7"
 
 import pytest
 from fastapi.testclient import TestClient
@@ -13,14 +16,17 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
+import app.db.models  # noqa: F401
 from app.core.security import create_access_token, hash_password
 from app.db.base import Base
 from app.db.deps import get_db
-import app.db.models  # noqa: F401
 from app.main import app
 from app.models.document import Document
 from app.models.extracted_field import ExtractedField
 from app.models.user import User
+from app.services.storage import get_storage
+
+API_PREFIX = "/api/v1"
 
 engine = create_engine(
     "sqlite+pysqlite:///:memory:",
@@ -43,6 +49,8 @@ def db():
 
 @pytest.fixture()
 def client(db):
+    get_storage.cache_clear()
+
     def override_get_db():
         try:
             yield db
@@ -53,6 +61,7 @@ def client(db):
     with TestClient(app) as test_client:
         yield test_client
     app.dependency_overrides.clear()
+    get_storage.cache_clear()
 
 
 @pytest.fixture()

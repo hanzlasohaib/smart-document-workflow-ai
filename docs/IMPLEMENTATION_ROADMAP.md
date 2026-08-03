@@ -22,7 +22,7 @@ flowchart LR
 
 | Practice | Detail |
 |---|---|
-| Phase branch | One long-lived feature branch per phase (current: `feature/p0-stabilize`) |
+| Phase branch | One long-lived feature branch per phase (current: `feature/p2-product-surfaces`) |
 | Merge to `main` | When that phase’s DoD is fully met |
 | Push cadence | Push the phase branch / merge to `main` at major milestones (phase DoD), not necessarily every WIP commit |
 | Next phase | After merge, cut a new branch (e.g. `feature/p1-saas-foundations`) from `main` |
@@ -86,11 +86,11 @@ Enforce server-side for at least:
 
 ---
 
-## P1 — SaaS foundations *(current)*
+## P1 — SaaS foundations *(merged)*
 
 **Intent:** Platform shape required by PAS-02/03 before portals.
 
-**Branch:** `feature/p1-saas-foundations`
+**Branch:** `feature/p1-saas-foundations` → merged to `main`
 
 | # | Work package | PAS | Concrete outcomes |
 |---|---|---|---|
@@ -117,9 +117,11 @@ Enforce server-side for at least:
 
 ---
 
-## P2 — Product surfaces
+## P2 — Product surfaces *(current)*
 
 **Intent:** Ship Next.js and close human-facing loops. Depends on P1 `/api/v1` + refresh auth.
+
+**Branch:** `feature/p2-product-surfaces`
 
 | # | Work package | PAS | Concrete outcomes |
 |---|---|---|---|

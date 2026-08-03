@@ -1,7 +1,8 @@
-# Local / parity stack (PAS-06): API + PostgreSQL
+# Local / parity stack (PAS-06): web + API + PostgreSQL
 # 1. cp backend/.env.example backend/.env  (set SECRET_KEY at minimum)
 # 2. docker compose up --build
 # 3. Optional admin: docker compose exec api python -m scripts.seed_admin
+# Web: http://localhost:3000  API: http://localhost:8000
 
 services:
   db:
@@ -37,12 +38,28 @@ services:
       ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@example.com}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-changeme}
       ADMIN_NAME: ${ADMIN_NAME:-Administrator}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
     volumes:
       - uploads:/app/uploads
       - ./backend/document_classifier.pkl:/app/document_classifier.pkl:ro
     depends_on:
       db:
         condition: service_healthy
+
+  web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000/api/v1}
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000/api/v1}
+      API_INTERNAL_URL: http://api:8000/api/v1
+      COOKIE_SECURE: "false"
+    depends_on:
+      - api
 
 volumes:
   pgdata:

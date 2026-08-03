@@ -3,11 +3,11 @@
 ![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)
 ![FastAPI](https://img.shields.io/badge/FastAPI-Framework-009688.svg)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Database-blue.svg)
-![Status](https://img.shields.io/badge/Status-P1%20SaaS%20Foundations-yellow)
+![Status](https://img.shields.io/badge/Status-P2%20Product%20Surfaces-yellow)
 
 FastAPI backend for OCR → classify → extract → human review → gated workflow automation.
 
-Architecture: **PAS 1.0.0** (Frozen). Delivery: [docs/IMPLEMENTATION_ROADMAP.md](../docs/IMPLEMENTATION_ROADMAP.md). Current phase: **P1 SaaS foundations**.
+Architecture: **PAS 1.0.0** (Frozen). Delivery: [docs/IMPLEMENTATION_ROADMAP.md](../docs/IMPLEMENTATION_ROADMAP.md). Current phase: **P2 Product surfaces** (Next.js FE consumes `/api/v1`).
 
 ---
 
@@ -37,7 +37,7 @@ uvicorn app.main:app --reload
 - Health: `GET /health` (DB readiness)
 - Canonical API: `/api/v1/...` (unversioned paths remain as temporary deprecated shims)
 
-### Docker Compose (API + Postgres)
+### Docker Compose (web + API + Postgres)
 
 From repo root:
 
@@ -45,6 +45,8 @@ From repo root:
 cp backend/.env.example backend/.env   # optional; Compose has defaults for local
 docker compose up --build
 ```
+
+Frontend: `http://localhost:3000` · API: `http://localhost:8000`
 
 Seed an admin (ops only — never via public signup):
 
@@ -80,9 +82,10 @@ CI runs lint, pytest, and Docker image build (`.github/workflows/ci.yml`).
 | Documents | `POST /api/v1/documents/upload`, `GET /my` | Owner |
 | Documents | `GET /`, `GET /pending`, approve/reject | Admin |
 | Review | `GET /api/v1/review/document/{id}`, `PUT /field/{id}` | Owner or admin |
+| Notifications | `GET /api/v1/notifications/`, `POST /{id}/read` | Own notifications |
 | Health | `GET /health` | Unversioned |
 
-Notification list/mark-read HTTP APIs arrive with P2 frontend.
+Set `CORS_ORIGINS` (comma-separated) for the Next.js origin (default `http://localhost:3000`).
 
 ---
 

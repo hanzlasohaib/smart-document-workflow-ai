@@ -36,5 +36,11 @@ class Settings(BaseSettings):
     ADMIN_PASSWORD: str | None = None
     ADMIN_NAME: str = "Administrator"
 
+    # Browser FE origins (comma-separated). Empty = CORS disabled.
+    CORS_ORIGINS: str = "http://localhost:3000"
+
+    def cors_origin_list(self) -> list[str]:
+        return [o.strip() for o in self.CORS_ORIGINS.split(",") if o.strip()]
+
 
 settings = Settings()

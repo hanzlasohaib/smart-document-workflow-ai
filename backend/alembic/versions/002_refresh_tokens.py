@@ -8,6 +8,7 @@ Create Date: 2026-08-02
 from typing import Sequence, Union
 
 import sqlalchemy as sa
+
 from alembic import op
 
 revision: str = "002_refresh_tokens"

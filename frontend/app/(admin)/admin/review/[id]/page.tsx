@@ -19,11 +19,12 @@ export default function AdminReviewPage() {
   const queryClient = useQueryClient();
   const [drafts, setDrafts] = useState<Record<number, string>>({});
 
-  const docs = useQuery({
-    queryKey: queryKeys.documents.all,
-    queryFn: async () => (await api.get<Document[]>("/documents/")).data,
+  const docQuery = useQuery({
+    queryKey: queryKeys.documents.detail(docId),
+    queryFn: async () => (await api.get<Document>(`/documents/${docId}`)).data,
+    enabled: Number.isFinite(docId),
   });
-  const doc = docs.data?.find((d) => d.id === docId);
+  const doc = docQuery.data;
 
   const fields = useQuery({
     queryKey: queryKeys.review.fields(docId),
@@ -48,8 +49,9 @@ export default function AdminReviewPage() {
       await api.post(`/documents/${docId}/${action}`);
     },
     onSuccess: (_, action) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.documents.pending });
-      queryClient.invalidateQueries({ queryKey: queryKeys.documents.all });
+      queryClient.invalidateQueries({ queryKey: ["documents", "pending"] });
+      queryClient.invalidateQueries({ queryKey: ["documents", "all"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.documents.detail(docId) });
       toast.success(action === "approve" ? "Approved" : "Rejected");
     },
     onError: (err) => toast.error(apiErrorMessage(err, "Decision failed")),

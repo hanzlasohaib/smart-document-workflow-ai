@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { api } from "@/lib/api/client";
-import { queryKeys } from "@/lib/api/query-keys";
 import type { Document } from "@/lib/api/types";
 import { apiErrorMessage } from "@/lib/utils";
 
@@ -27,7 +26,7 @@ export default function UploadPage() {
       return data;
     },
     onSuccess: (doc) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.documents.mine });
+      queryClient.invalidateQueries({ queryKey: ["documents", "mine"] });
       toast.success("Document uploaded");
       router.push(`/documents/${doc.id}`);
     },

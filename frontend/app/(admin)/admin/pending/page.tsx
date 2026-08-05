@@ -2,21 +2,31 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
+import { useState } from "react";
 import { toast } from "sonner";
 
 import { PageEnter } from "@/components/page-enter";
+import { PaginationControls } from "@/components/pagination-controls";
 import { StatusChip } from "@/components/status-chip";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api/client";
 import { queryKeys } from "@/lib/api/query-keys";
-import type { Document } from "@/lib/api/types";
+import type { Document, Paginated } from "@/lib/api/types";
 import { apiErrorMessage } from "@/lib/utils";
+
+const PAGE_SIZE = 20;
 
 export default function PendingApprovalsPage() {
   const queryClient = useQueryClient();
+  const [page, setPage] = useState(1);
   const pending = useQuery({
-    queryKey: queryKeys.documents.pending,
-    queryFn: async () => (await api.get<Document[]>("/documents/pending")).data,
+    queryKey: queryKeys.documents.pending(page, PAGE_SIZE),
+    queryFn: async () =>
+      (
+        await api.get<Paginated<Document>>("/documents/pending", {
+          params: { page, page_size: PAGE_SIZE },
+        })
+      ).data,
   });
 
   const decide = useMutation({
@@ -24,19 +34,21 @@ export default function PendingApprovalsPage() {
       await api.post(`/documents/${id}/${action}`);
     },
     onSuccess: (_, vars) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.documents.pending });
-      queryClient.invalidateQueries({ queryKey: queryKeys.documents.all });
+      queryClient.invalidateQueries({ queryKey: ["documents", "pending"] });
+      queryClient.invalidateQueries({ queryKey: ["documents", "all"] });
       toast.success(vars.action === "approve" ? "Approved" : "Rejected");
     },
     onError: (err) => toast.error(apiErrorMessage(err, "Decision failed")),
   });
+
+  const items = pending.data?.items ?? [];
 
   return (
     <PageEnter>
       <h1 className="font-display text-3xl tracking-tight">Pending approvals</h1>
       <p className="mt-2 text-ink/60">Approve or reject documents awaiting a business decision.</p>
       <div className="mt-8 space-y-3">
-        {(pending.data ?? []).map((doc) => (
+        {items.map((doc) => (
           <div
             key={doc.id}
             className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-ink/10 bg-white/70 p-4"
@@ -71,10 +83,15 @@ export default function PendingApprovalsPage() {
             </div>
           </div>
         ))}
-        {!pending.isLoading && (pending.data?.length ?? 0) === 0 && (
+        {!pending.isLoading && items.length === 0 && (
           <p className="text-sm text-ink/50">No pending approvals.</p>
         )}
       </div>
+      <PaginationControls
+        page={page}
+        pages={pending.data?.pages ?? 0}
+        onPageChange={setPage}
+      />
     </PageEnter>
   );
 }

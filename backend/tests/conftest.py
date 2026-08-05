@@ -10,6 +10,9 @@ os.environ["CONFIDENCE_THRESHOLD"] = "0.70"
 os.environ["ACCESS_TOKEN_EXPIRE_MINUTES"] = "15"
 os.environ["REFRESH_TOKEN_EXPIRE_DAYS"] = "7"
 os.environ["CORS_ORIGINS"] = "http://localhost:3000"
+os.environ["LOG_FORMAT"] = "text"
+os.environ["AUTH_RATE_LIMIT_REQUESTS"] = "0"
+os.environ["AUTH_RATE_LIMIT_WINDOW_SECONDS"] = "60"
 
 import pytest
 from fastapi.testclient import TestClient

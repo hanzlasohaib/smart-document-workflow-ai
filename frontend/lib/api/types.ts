@@ -32,3 +32,11 @@ export interface Notification {
   created_at: string | null;
   is_read: boolean;
 }
+
+export interface Paginated<T> {
+  items: T[];
+  total: number;
+  page: number;
+  page_size: number;
+  pages: number;
+}

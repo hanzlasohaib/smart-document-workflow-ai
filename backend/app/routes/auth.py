@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
+from app.core.rate_limit import check_rate_limit
 from app.core.security import (
     create_access_token,
     get_current_user,
@@ -33,7 +34,12 @@ def _token_pair(db: Session, user: User) -> dict:
 
 
 @router.post("/register", response_model=UserOut)
-def register_user(user_data: UserCreate, db: Session = Depends(get_db)):
+def register_user(
+    request: Request,
+    user_data: UserCreate,
+    db: Session = Depends(get_db),
+):
+    check_rate_limit(request, scope="auth")
     existing_user = db.query(User).filter(User.email == user_data.email).first()
     if existing_user:
         raise HTTPException(status_code=400, detail="Email already registered")
@@ -52,9 +58,11 @@ def register_user(user_data: UserCreate, db: Session = Depends(get_db)):
 
 @router.post("/login", response_model=Token)
 def login_user(
+    request: Request,
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db),
 ):
+    check_rate_limit(request, scope="auth")
     user = db.query(User).filter(User.email == form_data.username).first()
     if not user or not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
@@ -64,7 +72,12 @@ def login_user(
 
 
 @router.post("/refresh", response_model=Token)
-def refresh_session(body: RefreshRequest, db: Session = Depends(get_db)):
+def refresh_session(
+    request: Request,
+    body: RefreshRequest,
+    db: Session = Depends(get_db),
+):
+    check_rate_limit(request, scope="auth")
     user, new_refresh = rotate_refresh_token(db, body.refresh_token)
     access_token = create_access_token(
         data={"sub": str(user.id), "role": user.role}

@@ -67,7 +67,7 @@ def test_user_cannot_list_pending(client, user):
 def test_admin_can_list_pending(client, admin, owned_document):
     response = client.get(f"{API_PREFIX}/documents/pending", headers=auth_header(admin))
     assert response.status_code == 200
-    assert len(response.json()) >= 1
+    assert response.json()["total"] >= 1
 
 
 def test_user_cannot_list_all_documents(client, user):

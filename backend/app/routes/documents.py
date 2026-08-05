@@ -1,15 +1,15 @@
 import uuid
-from typing import List
 
-from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, UploadFile
+from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, Query, UploadFile
 from sqlalchemy.orm import Session
 
-from app.core.deps import require_admin
+from app.core.deps import get_owned_or_admin_document, require_admin
 from app.core.security import get_current_user
 from app.db.deps import get_db
 from app.models.document import Document
 from app.models.user import User
 from app.schemas.document import DocumentOut
+from app.schemas.pagination import Paginated, paginate, to_paginated
 from app.services.jobs import enqueue_document_processing
 from app.services.notification_service import emit_document_event
 from app.services.storage import get_storage
@@ -84,33 +84,48 @@ def reject_document(
     return {"message": "Document rejected"}
 
 
-@router.get("/pending", response_model=List[DocumentOut])
+@router.get("/pending", response_model=Paginated[DocumentOut])
 def get_pending_documents(
     db: Session = Depends(get_db),
     _: User = Depends(require_admin),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
 ):
-    return (
-        db.query(Document)
-        .filter(Document.approval_status == "pending")
-        .all()
-    )
+    query = db.query(Document).filter(Document.approval_status == "pending")
+    rows, total, pages = paginate(query, page=page, page_size=page_size)
+    return to_paginated(rows, total=total, page=page, page_size=page_size, pages=pages)
 
 
-@router.get("/my", response_model=List[DocumentOut])
+@router.get("/my", response_model=Paginated[DocumentOut])
 def get_my_documents(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
 ):
-    return (
+    query = (
         db.query(Document)
         .filter(Document.user_id == current_user.id)
-        .all()
+        .order_by(Document.id.desc())
     )
+    rows, total, pages = paginate(query, page=page, page_size=page_size)
+    return to_paginated(rows, total=total, page=page, page_size=page_size, pages=pages)
 
 
-@router.get("/", response_model=list[DocumentOut])
+@router.get("/", response_model=Paginated[DocumentOut])
 def get_all_documents(
     db: Session = Depends(get_db),
     _: User = Depends(require_admin),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
 ):
-    return db.query(Document).all()
+    query = db.query(Document).order_by(Document.id.desc())
+    rows, total, pages = paginate(query, page=page, page_size=page_size)
+    return to_paginated(rows, total=total, page=page, page_size=page_size, pages=pages)
+
+
+@router.get("/{doc_id}", response_model=DocumentOut)
+def get_document(
+    document: Document = Depends(get_owned_or_admin_document),
+):
+    return document

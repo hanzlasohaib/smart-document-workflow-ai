@@ -20,15 +20,16 @@ export default function DocumentDetailPage() {
   const queryClient = useQueryClient();
   const [drafts, setDrafts] = useState<Record<number, string>>({});
 
-  const docs = useQuery({
-    queryKey: queryKeys.documents.mine,
-    queryFn: async () => (await api.get<Document[]>("/documents/my")).data,
+  const docQuery = useQuery({
+    queryKey: queryKeys.documents.detail(docId),
+    queryFn: async () => (await api.get<Document>(`/documents/${docId}`)).data,
+    enabled: Number.isFinite(docId),
     refetchInterval: (query) => {
-      const doc = query.state.data?.find((d) => d.id === docId);
-      return doc?.status === "processing" || doc?.status === "uploaded" ? 3000 : false;
+      const status = query.state.data?.status;
+      return status === "processing" || status === "uploaded" ? 3000 : false;
     },
   });
-  const doc = docs.data?.find((d) => d.id === docId);
+  const doc = docQuery.data;
 
   const fields = useQuery({
     queryKey: queryKeys.review.fields(docId),
@@ -43,7 +44,7 @@ export default function DocumentDetailPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.review.fields(docId) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.documents.mine });
+      queryClient.invalidateQueries({ queryKey: queryKeys.documents.detail(docId) });
       toast.success("Field verified");
     },
     onError: (err) => toast.error(apiErrorMessage(err, "Could not update field")),

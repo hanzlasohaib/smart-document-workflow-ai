@@ -3,11 +3,11 @@
 ![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)
 ![FastAPI](https://img.shields.io/badge/FastAPI-Framework-009688.svg)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Database-blue.svg)
-![Status](https://img.shields.io/badge/Status-P2%20Product%20Surfaces-yellow)
+![Status](https://img.shields.io/badge/Status-P3%20Harden%20and%20Scale-yellow)
 
 FastAPI backend for OCR → classify → extract → human review → gated workflow automation.
 
-Architecture: **PAS 1.0.0** (Frozen). Delivery: [docs/IMPLEMENTATION_ROADMAP.md](../docs/IMPLEMENTATION_ROADMAP.md). Current phase: **P2 Product surfaces** (Next.js FE consumes `/api/v1`).
+Architecture: **PAS 1.0.0** (Frozen). Delivery: [docs/IMPLEMENTATION_ROADMAP.md](../docs/IMPLEMENTATION_ROADMAP.md). Current phase: **P3 Harden and scale**.
 
 ---
 
@@ -17,7 +17,8 @@ Architecture: **PAS 1.0.0** (Frozen). Delivery: [docs/IMPLEMENTATION_ROADMAP.md]
 - PostgreSQL + SQLAlchemy + Alembic
 - Access JWT + rotating refresh tokens
 - Storage adapter (`local` or `supabase`)
-- In-process job enqueue boundary (queue worker later / P3)
+- In-process job enqueue boundary ([queue deferred](../docs/ops/QUEUE_DEFERRAL.md) until ADR-02-004 triggers)
+- Structured JSON logs + correlation IDs; optional Sentry (`SENTRY_DSN`)
 - pytesseract / spaCy / scikit-learn classifier
 
 ---
@@ -34,7 +35,7 @@ uvicorn app.main:app --reload
 ```
 
 - Docs: `http://127.0.0.1:8000/docs`
-- Health: `GET /health` (DB readiness)
+- Liveness: `GET /live` · Readiness: `GET /ready` (DB + storage config; `/health` is an alias)
 - Canonical API: `/api/v1/...` (unversioned paths remain as temporary deprecated shims)
 
 ### Docker Compose (web + API + Postgres)
@@ -78,14 +79,17 @@ CI runs lint, pytest, and Docker image build (`.github/workflows/ci.yml`).
 
 | Area | Routes | Notes |
 |---|---|---|
-| Auth | `POST /api/v1/auth/register`, `login`, `refresh`, `logout`, `GET /me` | Login returns access + refresh |
-| Documents | `POST /api/v1/documents/upload`, `GET /my` | Owner |
-| Documents | `GET /`, `GET /pending`, approve/reject | Admin |
+| Auth | `POST /api/v1/auth/register`, `login`, `refresh`, `logout`, `GET /me` | Login returns access + refresh; auth routes rate-limited |
+| Documents | `POST /upload`, `GET /my`, `GET /{id}` | Owner (or admin for `/{id}`); lists paginated |
+| Documents | `GET /`, `GET /pending`, approve/reject | Admin; lists paginated |
 | Review | `GET /api/v1/review/document/{id}`, `PUT /field/{id}` | Owner or admin |
-| Notifications | `GET /api/v1/notifications/`, `POST /{id}/read` | Own notifications |
-| Health | `GET /health` | Unversioned |
+| Notifications | `GET /api/v1/notifications/`, `POST /{id}/read` | Own notifications; list paginated |
+| Probes | `GET /live`, `/ready`, `/health` | Unversioned |
+
+List responses: `{ items, total, page, page_size, pages }` with `page` / `page_size` query params.
 
 Set `CORS_ORIGINS` (comma-separated) for the Next.js origin (default `http://localhost:3000`).
+Ops: [backup/restore](../docs/ops/BACKUP_RESTORE.md), [queue deferral](../docs/ops/QUEUE_DEFERRAL.md).
 
 ---
 

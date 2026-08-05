@@ -2,18 +2,30 @@
 
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
+import { useState } from "react";
 
 import { PageEnter } from "@/components/page-enter";
+import { PaginationControls } from "@/components/pagination-controls";
 import { StatusChip } from "@/components/status-chip";
 import { api } from "@/lib/api/client";
 import { queryKeys } from "@/lib/api/query-keys";
-import type { Document } from "@/lib/api/types";
+import type { Document, Paginated } from "@/lib/api/types";
+
+const PAGE_SIZE = 20;
 
 export default function AdminDocumentsPage() {
+  const [page, setPage] = useState(1);
   const docs = useQuery({
-    queryKey: queryKeys.documents.all,
-    queryFn: async () => (await api.get<Document[]>("/documents/")).data,
+    queryKey: queryKeys.documents.all(page, PAGE_SIZE),
+    queryFn: async () =>
+      (
+        await api.get<Paginated<Document>>("/documents/", {
+          params: { page, page_size: PAGE_SIZE },
+        })
+      ).data,
   });
+
+  const items = docs.data?.items ?? [];
 
   return (
     <PageEnter>
@@ -30,7 +42,7 @@ export default function AdminDocumentsPage() {
             </tr>
           </thead>
           <tbody>
-            {(docs.data ?? []).map((doc) => (
+            {items.map((doc) => (
               <tr key={doc.id} className="border-b border-ink/5 last:border-0">
                 <td className="px-4 py-3">{doc.id}</td>
                 <td className="px-4 py-3">
@@ -46,10 +58,15 @@ export default function AdminDocumentsPage() {
             ))}
           </tbody>
         </table>
-        {!docs.isLoading && (docs.data?.length ?? 0) === 0 && (
+        {!docs.isLoading && items.length === 0 && (
           <p className="p-4 text-sm text-ink/50">No documents.</p>
         )}
       </div>
+      <PaginationControls
+        page={page}
+        pages={docs.data?.pages ?? 0}
+        onPageChange={setPage}
+      />
     </PageEnter>
   );
 }

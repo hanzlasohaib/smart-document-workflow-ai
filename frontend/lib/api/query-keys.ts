@@ -3,15 +3,16 @@ export const queryKeys = {
     me: ["auth", "me"] as const,
   },
   documents: {
-    mine: ["documents", "mine"] as const,
-    all: ["documents", "all"] as const,
-    pending: ["documents", "pending"] as const,
+    mine: (page = 1, pageSize = 20) => ["documents", "mine", page, pageSize] as const,
+    all: (page = 1, pageSize = 20) => ["documents", "all", page, pageSize] as const,
+    pending: (page = 1, pageSize = 20) =>
+      ["documents", "pending", page, pageSize] as const,
     detail: (id: number) => ["documents", "detail", id] as const,
   },
   review: {
     fields: (docId: number) => ["review", "fields", docId] as const,
   },
   notifications: {
-    list: ["notifications", "list"] as const,
+    list: (page = 1, pageSize = 20) => ["notifications", "list", page, pageSize] as const,
   },
 };

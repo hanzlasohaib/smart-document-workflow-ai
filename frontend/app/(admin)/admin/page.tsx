@@ -9,16 +9,26 @@ import { StatusChip } from "@/components/status-chip";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api/client";
 import { queryKeys } from "@/lib/api/query-keys";
-import type { Document } from "@/lib/api/types";
+import type { Document, Paginated } from "@/lib/api/types";
 
 export default function AdminDashboardPage() {
   const pending = useQuery({
-    queryKey: queryKeys.documents.pending,
-    queryFn: async () => (await api.get<Document[]>("/documents/pending")).data,
+    queryKey: queryKeys.documents.pending(1, 5),
+    queryFn: async () =>
+      (
+        await api.get<Paginated<Document>>("/documents/pending", {
+          params: { page: 1, page_size: 5 },
+        })
+      ).data,
   });
   const all = useQuery({
-    queryKey: queryKeys.documents.all,
-    queryFn: async () => (await api.get<Document[]>("/documents/")).data,
+    queryKey: queryKeys.documents.all(1, 1),
+    queryFn: async () =>
+      (
+        await api.get<Paginated<Document>>("/documents/", {
+          params: { page: 1, page_size: 1 },
+        })
+      ).data,
   });
 
   return (
@@ -32,7 +42,7 @@ export default function AdminDashboardPage() {
         <div>
           <h1 className="font-display text-3xl tracking-tight">Operations</h1>
           <p className="mt-2 text-ink/60">
-            {(pending.data ?? []).length} pending · {(all.data ?? []).length} total documents
+            {pending.data?.total ?? 0} pending · {all.data?.total ?? 0} total documents
           </p>
         </div>
         <Button asChild>
@@ -43,7 +53,7 @@ export default function AdminDashboardPage() {
             Latest pending
           </h2>
           <div className="space-y-2 rounded-xl border border-ink/10 bg-white/70 p-4">
-            {(pending.data ?? []).slice(0, 5).map((doc) => (
+            {(pending.data?.items ?? []).map((doc) => (
               <Link
                 key={doc.id}
                 href={`/admin/review/${doc.id}`}
@@ -53,7 +63,7 @@ export default function AdminDashboardPage() {
                 <StatusChip status={doc.status} />
               </Link>
             ))}
-            {!pending.isLoading && (pending.data?.length ?? 0) === 0 && (
+            {!pending.isLoading && (pending.data?.total ?? 0) === 0 && (
               <p className="text-sm text-ink/50">Queue is clear.</p>
             )}
           </div>

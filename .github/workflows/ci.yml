@@ -22,6 +22,8 @@ jobs:
       ACCESS_TOKEN_EXPIRE_MINUTES: "15"
       REFRESH_TOKEN_EXPIRE_DAYS: "7"
       CORS_ORIGINS: http://localhost:3000
+      LOG_FORMAT: text
+      AUTH_RATE_LIMIT_REQUESTS: "0"
 
     steps:
       - uses: actions/checkout@v4
@@ -45,6 +47,14 @@ jobs:
       - name: Run tests
         run: pytest -q
 
+      - name: Alembic upgrade dry-run (empty DB)
+        env:
+          DATABASE_URL: sqlite+pysqlite:///./ci_alembic.db
+        run: |
+          alembic upgrade head
+          alembic upgrade head --sql > /tmp/alembic.sql
+          test -s /tmp/alembic.sql
+
   frontend:
     runs-on: ubuntu-latest
     defaults:
@@ -66,6 +76,9 @@ jobs:
 
       - name: Lint
         run: npm run lint
+
+      - name: Smoke
+        run: npm run smoke
 
       - name: Build
         env:

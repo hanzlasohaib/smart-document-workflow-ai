@@ -1,20 +1,30 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import { toast } from "sonner";
 
 import { PageEnter } from "@/components/page-enter";
+import { PaginationControls } from "@/components/pagination-controls";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api/client";
 import { queryKeys } from "@/lib/api/query-keys";
-import type { Notification } from "@/lib/api/types";
+import type { Notification, Paginated } from "@/lib/api/types";
 import { apiErrorMessage } from "@/lib/utils";
+
+const PAGE_SIZE = 20;
 
 export default function NotificationsPage() {
   const queryClient = useQueryClient();
+  const [page, setPage] = useState(1);
   const list = useQuery({
-    queryKey: queryKeys.notifications.list,
-    queryFn: async () => (await api.get<Notification[]>("/notifications/")).data,
+    queryKey: queryKeys.notifications.list(page, PAGE_SIZE),
+    queryFn: async () =>
+      (
+        await api.get<Paginated<Notification>>("/notifications/", {
+          params: { page, page_size: PAGE_SIZE },
+        })
+      ).data,
   });
 
   const markRead = useMutation({
@@ -22,10 +32,12 @@ export default function NotificationsPage() {
       await api.post(`/notifications/${id}/read`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.notifications.list });
+      queryClient.invalidateQueries({ queryKey: ["notifications", "list"] });
     },
     onError: (err) => toast.error(apiErrorMessage(err, "Could not mark read")),
   });
+
+  const items = list.data?.items ?? [];
 
   return (
     <PageEnter>
@@ -33,7 +45,7 @@ export default function NotificationsPage() {
       <p className="mt-2 text-ink/60">Status updates for your documents.</p>
       <div className="mt-8 space-y-3">
         {list.isLoading && <p className="text-sm text-ink/50">Loading…</p>}
-        {(list.data ?? []).map((n) => (
+        {items.map((n) => (
           <div
             key={n.id}
             className="rounded-xl border border-ink/10 bg-white/70 p-4"
@@ -61,10 +73,15 @@ export default function NotificationsPage() {
             </div>
           </div>
         ))}
-        {!list.isLoading && (list.data?.length ?? 0) === 0 && (
+        {!list.isLoading && items.length === 0 && (
           <p className="text-sm text-ink/50">No notifications yet.</p>
         )}
       </div>
+      <PaginationControls
+        page={page}
+        pages={list.data?.pages ?? 0}
+        onPageChange={setPage}
+      />
     </PageEnter>
   );
 }

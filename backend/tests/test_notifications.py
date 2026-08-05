@@ -27,10 +27,11 @@ def test_list_own_notifications(client, user, other_user, db):
     )
     assert response.status_code == 200
     body = response.json()
-    assert len(body) == 1
-    assert body[0]["id"] == mine.id
-    assert body[0]["title"] == "Mine"
-    assert body[0]["is_read"] is False
+    assert body["total"] == 1
+    assert len(body["items"]) == 1
+    assert body["items"][0]["id"] == mine.id
+    assert body["items"][0]["title"] == "Mine"
+    assert body["items"][0]["is_read"] is False
 
 
 def test_cannot_list_without_auth(client):

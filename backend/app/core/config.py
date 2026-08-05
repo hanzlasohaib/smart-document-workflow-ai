@@ -39,8 +39,25 @@ class Settings(BaseSettings):
     # Browser FE origins (comma-separated). Empty = CORS disabled.
     CORS_ORIGINS: str = "http://localhost:3000"
 
+    # Observability (PAS-06 / P3)
+    LOG_FORMAT: str = "json"  # json | text
+    SENTRY_DSN: str | None = None
+    SENTRY_ENVIRONMENT: str = "local"
+
+    # Auth rate limit (per client IP, sliding window). 0 disables.
+    AUTH_RATE_LIMIT_REQUESTS: int = 20
+    AUTH_RATE_LIMIT_WINDOW_SECONDS: int = 60
+
     def cors_origin_list(self) -> list[str]:
         return [o.strip() for o in self.CORS_ORIGINS.split(",") if o.strip()]
+
+    def storage_config_ready(self) -> bool:
+        backend = (self.STORAGE_BACKEND or "local").lower()
+        if backend == "local":
+            return bool(self.UPLOAD_DIR)
+        if backend == "supabase":
+            return bool(self.SUPABASE_URL and self.SUPABASE_SERVICE_ROLE_KEY)
+        return False
 
 
 settings = Settings()

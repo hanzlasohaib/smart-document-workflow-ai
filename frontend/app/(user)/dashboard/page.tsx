@@ -9,22 +9,32 @@ import { StatusChip } from "@/components/status-chip";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api/client";
 import { queryKeys } from "@/lib/api/query-keys";
-import type { Document, Notification } from "@/lib/api/types";
+import type { Document, Notification, Paginated } from "@/lib/api/types";
 import { useAuth } from "@/lib/auth/session";
 
 export default function UserDashboardPage() {
   const { user } = useAuth();
   const docs = useQuery({
-    queryKey: queryKeys.documents.mine,
-    queryFn: async () => (await api.get<Document[]>("/documents/my")).data,
+    queryKey: queryKeys.documents.mine(1, 5),
+    queryFn: async () =>
+      (
+        await api.get<Paginated<Document>>("/documents/my", {
+          params: { page: 1, page_size: 5 },
+        })
+      ).data,
   });
   const notifs = useQuery({
-    queryKey: queryKeys.notifications.list,
-    queryFn: async () => (await api.get<Notification[]>("/notifications/")).data,
+    queryKey: queryKeys.notifications.list(1, 20),
+    queryFn: async () =>
+      (
+        await api.get<Paginated<Notification>>("/notifications/", {
+          params: { page: 1, page_size: 20 },
+        })
+      ).data,
   });
 
-  const recent = (docs.data ?? []).slice(0, 5);
-  const unread = (notifs.data ?? []).filter((n) => !n.is_read).length;
+  const recent = docs.data?.items ?? [];
+  const unread = (notifs.data?.items ?? []).filter((n) => !n.is_read).length;
 
   return (
     <PageEnter>

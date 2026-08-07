@@ -10,6 +10,14 @@ import { cn } from "@/lib/utils";
 
 type NavItem = { href: string; label: string };
 
+function activeHref(pathname: string, nav: NavItem[]): string | null {
+  const matches = nav.filter(
+    (item) => pathname === item.href || pathname.startsWith(`${item.href}/`),
+  );
+  if (matches.length === 0) return null;
+  return matches.reduce((a, b) => (a.href.length >= b.href.length ? a : b)).href;
+}
+
 export function PortalShell({
   title,
   nav,
@@ -21,6 +29,7 @@ export function PortalShell({
 }) {
   const pathname = usePathname();
   const { user, logout } = useAuth();
+  const current = activeHref(pathname, nav);
 
   return (
     <div className="min-h-screen bg-paper text-ink">
@@ -42,22 +51,29 @@ export function PortalShell({
             Log out
           </Button>
         </header>
-        <div className="grid gap-8 md:grid-cols-[200px_1fr]">
-          <nav className="flex flex-row flex-wrap gap-2 md:flex-col md:gap-1">
-            {nav.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "rounded-md px-3 py-2 text-sm transition-colors",
-                  pathname === item.href || pathname.startsWith(`${item.href}/`)
-                    ? "bg-ink text-paper"
-                    : "text-ink/70 hover:bg-ink/5 hover:text-ink",
-                )}
-              >
-                {item.label}
-              </Link>
-            ))}
+        <div className="grid gap-8 md:grid-cols-[220px_1fr]">
+          <nav
+            aria-label="Portal"
+            className="flex flex-row flex-wrap gap-1 rounded-xl border border-ink/10 bg-white/50 p-2 md:flex-col"
+          >
+            {nav.map((item) => {
+              const active = current === item.href;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  aria-current={active ? "page" : undefined}
+                  className={cn(
+                    "rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                    active
+                      ? "bg-ink text-paper shadow-sm"
+                      : "text-ink/65 hover:bg-ink/5 hover:text-ink",
+                  )}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
           </nav>
           <main className="min-w-0">{children}</main>
         </div>

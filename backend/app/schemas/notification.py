@@ -9,5 +9,6 @@ class NotificationOut(BaseModel):
     message: str
     created_at: datetime | None = None
     is_read: bool
+    document_id: int | None = None
 
     model_config = ConfigDict(from_attributes=True)

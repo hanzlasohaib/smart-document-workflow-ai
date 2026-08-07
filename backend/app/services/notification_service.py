@@ -43,6 +43,7 @@ def emit_document_event(db: Session, document: Document, event: str) -> Notifica
     title, message_template = copy
     notification = Notification(
         user_id=document.user_id,
+        document_id=document.id,
         title=title,
         message=message_template.format(filename=document.original_filename),
     )

@@ -64,7 +64,12 @@ export default function AdminDashboardPage() {
               </Link>
             ))}
             {!pending.isLoading && (pending.data?.total ?? 0) === 0 && (
-              <p className="text-sm text-ink/50">Queue is clear.</p>
+              <div className="py-6 text-center">
+                <p className="text-sm text-ink/50">Queue is clear.</p>
+                <Button asChild className="mt-4" size="sm" variant="outline">
+                  <Link href="/admin/documents">Browse all documents</Link>
+                </Button>
+              </div>
             )}
           </div>
         </section>

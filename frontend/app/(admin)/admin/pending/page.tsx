@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api/client";
 import { queryKeys } from "@/lib/api/query-keys";
 import type { Document, Paginated } from "@/lib/api/types";
+import { formatConfidence, isLowConfidence } from "@/lib/api/types";
 import { apiErrorMessage } from "@/lib/utils";
 
 const PAGE_SIZE = 20;
@@ -60,6 +61,13 @@ export default function PendingApprovalsPage() {
               >
                 {doc.original_filename}
               </Link>
+              <p className="mt-1 text-xs text-ink/50">
+                {doc.document_type ?? "Unknown"}
+                {doc.confidence_score != null
+                  ? ` · ${formatConfidence(doc.confidence_score)}`
+                  : ""}
+                {isLowConfidence(doc) ? " · uncertain" : ""}
+              </p>
               <div className="mt-1">
                 <StatusChip status={doc.status} />
               </div>
@@ -84,7 +92,12 @@ export default function PendingApprovalsPage() {
           </div>
         ))}
         {!pending.isLoading && items.length === 0 && (
-          <p className="text-sm text-ink/50">No pending approvals.</p>
+          <div className="rounded-xl border border-dashed border-ink/15 bg-white/40 px-4 py-10 text-center">
+            <p className="text-sm text-ink/50">Queue is clear.</p>
+            <Button asChild className="mt-4" size="sm" variant="outline">
+              <Link href="/admin/documents">Browse all documents</Link>
+            </Button>
+          </div>
         )}
       </div>
       <PaginationControls

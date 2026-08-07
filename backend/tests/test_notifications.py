@@ -4,9 +4,12 @@ from app.models.notification import Notification
 from tests.conftest import API_PREFIX, auth_header
 
 
-def _seed_notification(db, user_id: int, title: str = "Test") -> Notification:
+def _seed_notification(
+    db, user_id: int, title: str = "Test", document_id: int | None = None
+) -> Notification:
     n = Notification(
         user_id=user_id,
+        document_id=document_id,
         title=title,
         message="Hello",
         is_read=False,
@@ -17,8 +20,8 @@ def _seed_notification(db, user_id: int, title: str = "Test") -> Notification:
     return n
 
 
-def test_list_own_notifications(client, user, other_user, db):
-    mine = _seed_notification(db, user.id, "Mine")
+def test_list_own_notifications(client, user, other_user, db, owned_document):
+    mine = _seed_notification(db, user.id, "Mine", document_id=owned_document.id)
     _seed_notification(db, other_user.id, "Theirs")
 
     response = client.get(
@@ -32,6 +35,7 @@ def test_list_own_notifications(client, user, other_user, db):
     assert body["items"][0]["id"] == mine.id
     assert body["items"][0]["title"] == "Mine"
     assert body["items"][0]["is_read"] is False
+    assert body["items"][0]["document_id"] == owned_document.id
 
 
 def test_cannot_list_without_auth(client):

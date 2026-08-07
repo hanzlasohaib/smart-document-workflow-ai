@@ -80,16 +80,16 @@ CI runs lint, pytest, and Docker image build (`.github/workflows/ci.yml`).
 | Area | Routes | Notes |
 |---|---|---|
 | Auth | `POST /api/v1/auth/register`, `login`, `refresh`, `logout`, `GET /me` | Login returns access + refresh; auth routes rate-limited |
-| Documents | `POST /upload`, `GET /my`, `GET /{id}` | Owner (or admin for `/{id}`); lists paginated |
+| Documents | `POST /upload`, `GET /my`, `GET /{id}`, `DELETE /{id}` | Owner (or admin for get/delete); lists paginated |
 | Documents | `GET /`, `GET /pending`, approve/reject | Admin; lists paginated |
-| Review | `GET /api/v1/review/document/{id}`, `PUT /field/{id}` | Owner or admin |
-| Notifications | `GET /api/v1/notifications/`, `POST /{id}/read` | Own notifications; list paginated |
+| Review | `GET /document/{id}`, `PUT /document/{id}/fields`, `PUT /field/{id}` | Owner or admin; bulk verify preferred |
+| Notifications | `GET /`, `POST /{id}/read` | Own notifications; includes `document_id` when set |
 | Probes | `GET /live`, `/ready`, `/health` | Unversioned |
 
 List responses: `{ items, total, page, page_size, pages }` with `page` / `page_size` query params.
 
 Set `CORS_ORIGINS` (comma-separated) for the Next.js origin (default `http://localhost:3000`).
-Ops: [backup/restore](../docs/ops/BACKUP_RESTORE.md), [queue deferral](../docs/ops/QUEUE_DEFERRAL.md).
+Ops: [backup/restore](../docs/ops/BACKUP_RESTORE.md), [queue deferral](../docs/ops/QUEUE_DEFERRAL.md), [upload/concurrency capacity](../docs/ops/UPLOAD_CAPACITY.md).
 
 ---
 
@@ -97,7 +97,7 @@ Ops: [backup/restore](../docs/ops/BACKUP_RESTORE.md), [queue deferral](../docs/o
 
 ```text
 backend/
-├── alembic/versions/     # 001 baseline, 002 refresh_tokens
+├── alembic/versions/     # 001 baseline, 002 refresh_tokens, 003 notification document_id
 ├── app/
 │   ├── api/v1/           # /api/v1 mount
 │   ├── core/             # config, security, authz

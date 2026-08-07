@@ -1,7 +1,10 @@
 import tempfile
 from pathlib import Path
+from urllib.parse import quote
 
 import httpx
+
+from app.services.storage.mime import resolve_content_type
 
 
 class SupabaseStorageAdapter:
@@ -21,21 +24,33 @@ class SupabaseStorageAdapter:
         }
 
     def _object_url(self, storage_key: str) -> str:
-        return f"{self.base_url}/storage/v1/object/{self.bucket}/{storage_key}"
+        # Encode each path segment; keep "/" for nested keys.
+        encoded = quote(storage_key, safe="/")
+        return f"{self.base_url}/storage/v1/object/{self.bucket}/{encoded}"
 
-    def save(self, data: bytes, stored_filename: str) -> str:
+    def save(
+        self,
+        data: bytes,
+        stored_filename: str,
+        content_type: str | None = None,
+    ) -> str:
         storage_key = stored_filename
+        mime = resolve_content_type(stored_filename, content_type)
         response = httpx.put(
             self._object_url(storage_key),
             content=data,
             headers={
                 **self._headers(),
-                "Content-Type": "application/octet-stream",
+                "Content-Type": mime,
                 "x-upsert": "true",
             },
             timeout=60.0,
         )
-        response.raise_for_status()
+        if response.is_error:
+            detail = response.text.strip() or response.reason_phrase
+            raise RuntimeError(
+                f"Supabase storage upload failed ({response.status_code}): {detail}"
+            )
         return storage_key
 
     def resolve_local_path(self, storage_key: str) -> str:
@@ -48,7 +63,11 @@ class SupabaseStorageAdapter:
             headers=self._headers(),
             timeout=60.0,
         )
-        response.raise_for_status()
+        if response.is_error:
+            detail = response.text.strip() or response.reason_phrase
+            raise RuntimeError(
+                f"Supabase storage download failed ({response.status_code}): {detail}"
+            )
         local_path.write_bytes(response.content)
         return str(local_path)
 
@@ -59,7 +78,10 @@ class SupabaseStorageAdapter:
             timeout=30.0,
         )
         if response.status_code not in (200, 404):
-            response.raise_for_status()
+            detail = response.text.strip() or response.reason_phrase
+            raise RuntimeError(
+                f"Supabase storage delete failed ({response.status_code}): {detail}"
+            )
         cached = self._tmp_dir / Path(storage_key).name
         if cached.is_file():
             cached.unlink()

@@ -7,9 +7,11 @@ import { useState } from "react";
 import { PageEnter } from "@/components/page-enter";
 import { PaginationControls } from "@/components/pagination-controls";
 import { StatusChip } from "@/components/status-chip";
+import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api/client";
 import { queryKeys } from "@/lib/api/query-keys";
 import type { Document, Paginated } from "@/lib/api/types";
+import { formatConfidence, isLowConfidence } from "@/lib/api/types";
 
 const PAGE_SIZE = 20;
 
@@ -29,15 +31,23 @@ export default function AdminDocumentsPage() {
 
   return (
     <PageEnter>
-      <h1 className="font-display text-3xl tracking-tight">All documents</h1>
-      <p className="mt-2 text-ink/60">Cross-user document list.</p>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="font-display text-3xl tracking-tight">All documents</h1>
+          <p className="mt-2 text-ink/60">Cross-user document list.</p>
+        </div>
+        <Button asChild size="sm" variant="outline">
+          <Link href="/admin/pending">Pending queue</Link>
+        </Button>
+      </div>
       <div className="mt-8 overflow-x-auto rounded-xl border border-ink/10 bg-white/70">
-        <table className="w-full min-w-[640px] text-left text-sm">
+        <table className="w-full min-w-[720px] text-left text-sm">
           <thead className="border-b border-ink/10 text-ink/50">
             <tr>
               <th className="px-4 py-3 font-medium">ID</th>
               <th className="px-4 py-3 font-medium">File</th>
               <th className="px-4 py-3 font-medium">Type</th>
+              <th className="px-4 py-3 font-medium">Confidence</th>
               <th className="px-4 py-3 font-medium">Status</th>
             </tr>
           </thead>
@@ -52,6 +62,10 @@ export default function AdminDocumentsPage() {
                 </td>
                 <td className="px-4 py-3">{doc.document_type ?? "—"}</td>
                 <td className="px-4 py-3">
+                  {formatConfidence(doc.confidence_score)}
+                  {isLowConfidence(doc) ? " · uncertain" : ""}
+                </td>
+                <td className="px-4 py-3">
                   <StatusChip status={doc.status} />
                 </td>
               </tr>
@@ -59,7 +73,12 @@ export default function AdminDocumentsPage() {
           </tbody>
         </table>
         {!docs.isLoading && items.length === 0 && (
-          <p className="p-4 text-sm text-ink/50">No documents.</p>
+          <div className="p-8 text-center">
+            <p className="text-sm text-ink/50">No documents.</p>
+            <Button asChild className="mt-4" size="sm" variant="outline">
+              <Link href="/admin/pending">Check pending queue</Link>
+            </Button>
+          </div>
         )}
       </div>
       <PaginationControls

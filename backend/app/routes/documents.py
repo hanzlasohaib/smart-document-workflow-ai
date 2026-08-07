@@ -1,5 +1,3 @@
-import uuid
-
 from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, Query, UploadFile
 from sqlalchemy.orm import Session
 
@@ -13,6 +11,7 @@ from app.schemas.pagination import Paginated, paginate, to_paginated
 from app.services.jobs import enqueue_document_processing
 from app.services.notification_service import emit_document_event
 from app.services.storage import get_storage
+from app.services.storage.keys import build_stored_filename
 from app.services.workflow_gates import maybe_run_workflow
 
 router = APIRouter(prefix="/documents", tags=["Documents"])
@@ -25,13 +24,25 @@ def upload_document(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    unique_filename = f"{uuid.uuid4()}_{file.filename}"
+    # Supabase/S3 object keys reject spaces and many special characters.
+    # Keep the human name on original_filename; store a safe key only.
+    unique_filename = build_stored_filename(file.filename)
     storage = get_storage()
-    storage_key = storage.save(file.file.read(), unique_filename)
+    try:
+        storage_key = storage.save(
+            file.file.read(),
+            unique_filename,
+            content_type=file.content_type,
+        )
+    except Exception as exc:
+        raise HTTPException(
+            status_code=502,
+            detail=f"Failed to store upload: {exc}",
+        ) from exc
 
     new_document = Document(
         user_id=current_user.id,
-        original_filename=file.filename,
+        original_filename=file.filename or unique_filename,
         stored_filename=unique_filename,
         file_path=storage_key,
         status="uploaded",
@@ -129,3 +140,38 @@ def get_document(
     document: Document = Depends(get_owned_or_admin_document),
 ):
     return document
+
+
+@router.delete("/{doc_id}")
+def delete_document(
+    document: Document = Depends(get_owned_or_admin_document),
+    db: Session = Depends(get_db),
+):
+    from app.models.automation_log import AutomationLog
+    from app.models.extracted_field import ExtractedField
+    from app.models.notification import Notification
+
+    storage_key = document.file_path
+    doc_id = document.id
+
+    db.query(ExtractedField).filter(ExtractedField.document_id == doc_id).delete(
+        synchronize_session=False
+    )
+    db.query(AutomationLog).filter(AutomationLog.document_id == doc_id).delete(
+        synchronize_session=False
+    )
+    # Keep notification history; clear deep-link target.
+    db.query(Notification).filter(Notification.document_id == doc_id).update(
+        {Notification.document_id: None},
+        synchronize_session=False,
+    )
+    db.delete(document)
+    db.commit()
+
+    try:
+        get_storage().delete(storage_key)
+    except Exception:
+        # Best-effort storage cleanup; DB row is already gone.
+        pass
+
+    return {"message": "Document deleted"}

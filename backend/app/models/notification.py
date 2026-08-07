@@ -11,6 +11,12 @@ class Notification(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"))
+    document_id = Column(
+        Integer,
+        ForeignKey("documents.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
     title = Column(String, nullable=False)
     message = Column(String, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)

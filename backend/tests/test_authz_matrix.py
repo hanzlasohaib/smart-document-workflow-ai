@@ -1,5 +1,6 @@
 """PAS-03 capability matrix cells for review and approval."""
 
+from app.models.extracted_field import ExtractedField
 from tests.conftest import API_PREFIX, auth_header
 
 
@@ -84,6 +85,26 @@ def test_owner_can_verify_own_field(client, user, owned_document, db):
     assert response.status_code == 200
     db.refresh(owned_document.extracted_fields[0])
     assert owned_document.extracted_fields[0].is_verified is True
+
+
+def test_owner_can_verify_all_fields(client, user, owned_document, db):
+    payload = {
+        "fields": [
+            {"id": f.id, "value": f"v-{f.id}"}
+            for f in owned_document.extracted_fields
+        ]
+    }
+    response = client.put(
+        f"{API_PREFIX}/review/document/{owned_document.id}/fields",
+        json=payload,
+        headers=auth_header(user),
+    )
+    assert response.status_code == 200
+    assert response.json()["updated"] == 2
+    db.expire_all()
+    for f in db.query(ExtractedField).filter_by(document_id=owned_document.id).all():
+        assert f.is_verified is True
+        assert f.field_value == f"v-{f.id}"
 
 
 def test_other_user_cannot_verify_field(client, other_user, owned_document):

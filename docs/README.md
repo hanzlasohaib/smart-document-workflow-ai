@@ -10,7 +10,7 @@ Project documentation for **Smart Document Workflow AI**.
 | PAS writing rules | [pas/DOCUMENTATION_STANDARDS.md](./pas/DOCUMENTATION_STANDARDS.md) | Mandatory template, ADR schema, standards |
 | Diagrams | [architecture/diagrams/](./architecture/diagrams/) | Mermaid sources / exported architecture diagrams |
 | Assets | [architecture/assets/](./architecture/assets/) | Static images used by docs |
-| Ops runbooks | [ops/BACKUP_RESTORE.md](./ops/BACKUP_RESTORE.md), [ops/QUEUE_DEFERRAL.md](./ops/QUEUE_DEFERRAL.md) | Backup/restore drill; P3 queue deferral rationale |
+| Ops runbooks | [ops/BACKUP_RESTORE.md](./ops/BACKUP_RESTORE.md), [ops/QUEUE_DEFERRAL.md](./ops/QUEUE_DEFERRAL.md), [ops/UPLOAD_CAPACITY.md](./ops/UPLOAD_CAPACITY.md) | Backup/restore; queue deferral; upload/concurrency capacity |
 
 ## How to use the PAS
 

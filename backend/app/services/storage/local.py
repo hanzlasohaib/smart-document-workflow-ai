@@ -7,7 +7,12 @@ class LocalStorageAdapter:
         self.upload_dir = Path(upload_dir)
         self.upload_dir.mkdir(parents=True, exist_ok=True)
 
-    def save(self, data: bytes, stored_filename: str) -> str:
+    def save(
+        self,
+        data: bytes,
+        stored_filename: str,
+        content_type: str | None = None,
+    ) -> str:
         path = self.upload_dir / stored_filename
         path.write_bytes(data)
         return str(path)

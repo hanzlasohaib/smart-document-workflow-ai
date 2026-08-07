@@ -31,6 +31,7 @@ export interface Notification {
   message: string;
   created_at: string | null;
   is_read: boolean;
+  document_id: number | null;
 }
 
 export interface Paginated<T> {
@@ -39,4 +40,17 @@ export interface Paginated<T> {
   page: number;
   page_size: number;
   pages: number;
+}
+
+/** Matches backend default CONFIDENCE_THRESHOLD for UX callouts. */
+export const CONFIDENCE_THRESHOLD = 0.7;
+
+export function isLowConfidence(doc: Document | null | undefined): boolean {
+  if (!doc || doc.confidence_score == null) return false;
+  return doc.confidence_score < CONFIDENCE_THRESHOLD;
+}
+
+export function formatConfidence(score: number | null | undefined): string {
+  if (score == null) return "—";
+  return `${(score * 100).toFixed(0)}%`;
 }

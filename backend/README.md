@@ -24,18 +24,20 @@ Architecture: **PAS 1.0.0** (Frozen). Delivery: [docs/IMPLEMENTATION_ROADMAP.md]
 
 ### Email notifications (Resend)
 
-When both `RESEND_API_KEY` and `RESEND_FROM_EMAIL` are set, the API sends a transactional email to the **document owner's account email** after the processing pipeline finishes with status `processed` (high-confidence success path). The message includes the document name and status. Delivery is best-effort: failures are logged and never fail the pipeline. Leave the vars unset locally to skip sending.
+When both `RESEND_API_KEY` and `RESEND_FROM_EMAIL` are set, Resend is used for:
+
+1. **Document processed** emails to the document owner (pipeline or verified admin approval → `processed`)
+2. **Admin login OTP** emails to `ADMIN_OTP_EMAIL` (falls back to `ADMIN_EMAIL`)
 
 | Variable | Purpose |
 |---|---|
 | `RESEND_API_KEY` | API key from the Resend dashboard |
 | `RESEND_FROM_EMAIL` | Verified sender, e.g. `Smart Docs <noreply@yourdomain.com>` |
+| `ADMIN_OTP_EMAIL` | Destination for admin login verification codes |
 
-**Local:** add both to `backend/.env` (see `.env.example`). Use Resend’s `onboarding@resend.dev` sender only for sandbox tests.
+**Admin login:** password success for `role=admin` returns `{ requires_otp, challenge_id, otp_destination }` (no tokens). Complete with `POST /api/v1/auth/admin/verify-otp` or resend via `POST /api/v1/auth/admin/resend-otp`. Non-admin login is unchanged.
 
-**Render:** set `RESEND_API_KEY` and `RESEND_FROM_EMAIL` as environment variables on the API service (same values as production Resend domain/sender). Do not commit keys.
-
-Flow: upload → background pipeline → OCR/classify/extract → status `processed` → in-app notification + Resend email to `User.email`.
+**Local / Render:** set Resend vars plus `ADMIN_OTP_EMAIL` (e.g. `hanzlamaan125@gmail.com`). Do not commit keys.
 
 ### Sentry (error tracking)
 
@@ -115,7 +117,8 @@ CI runs lint, pytest, and Docker image build (`.github/workflows/ci.yml`).
 
 | Area | Routes | Notes |
 |---|---|---|
-| Auth | `POST /api/v1/auth/register`, `login`, `refresh`, `logout`, `GET /me` | Login returns access + refresh; auth routes rate-limited |
+| Auth | `POST /api/v1/auth/register`, `login`, `refresh`, `logout`, `GET /me` | Users get tokens on login; admins get OTP challenge then `admin/verify-otp`; auth routes rate-limited |
+| Auth (admin OTP) | `POST /api/v1/auth/admin/verify-otp`, `admin/resend-otp` | Issues tokens only after OTP; resend invalidates prior challenge |
 | Documents | `POST /upload`, `GET /my`, `GET /{id}`, `DELETE /{id}` | Owner (or admin for get/delete); lists paginated |
 | Documents | `GET /`, `GET /pending`, approve/reject | Admin; lists paginated |
 | Review | `GET /document/{id}`, `PUT /document/{id}/fields`, `PUT /field/{id}` | Owner or admin; bulk verify preferred |

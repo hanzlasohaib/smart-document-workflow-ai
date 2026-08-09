@@ -35,6 +35,11 @@ class Settings(BaseSettings):
     ADMIN_EMAIL: str | None = None
     ADMIN_PASSWORD: str | None = None
     ADMIN_NAME: str = "Administrator"
+    # Destination for admin login OTP (falls back to ADMIN_EMAIL).
+    ADMIN_OTP_EMAIL: str | None = None
+    ADMIN_OTP_EXPIRE_MINUTES: int = 10
+    ADMIN_OTP_MAX_ATTEMPTS: int = 5
+    ADMIN_OTP_LENGTH: int = 6
 
     # Browser FE origins (comma-separated). Empty = CORS disabled.
     CORS_ORIGINS: str = "http://localhost:3000"
@@ -69,6 +74,10 @@ class Settings(BaseSettings):
 
     def resend_configured(self) -> bool:
         return bool(self.RESEND_API_KEY and self.RESEND_FROM_EMAIL)
+
+    def admin_otp_destination(self) -> str | None:
+        destination = (self.ADMIN_OTP_EMAIL or self.ADMIN_EMAIL or "").strip()
+        return destination or None
 
 
 settings = Settings()

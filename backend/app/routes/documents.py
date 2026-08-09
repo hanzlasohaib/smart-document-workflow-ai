@@ -8,11 +8,12 @@ from app.models.document import Document
 from app.models.user import User
 from app.schemas.document import DocumentOut
 from app.schemas.pagination import Paginated, paginate, to_paginated
+from app.services.email_service import maybe_notify_document_processed
 from app.services.jobs import enqueue_document_processing
 from app.services.notification_service import emit_document_event
 from app.services.storage import get_storage
 from app.services.storage.keys import build_stored_filename
-from app.services.workflow_gates import maybe_run_workflow
+from app.services.workflow_gates import maybe_run_workflow, required_fields_verified
 
 router = APIRouter(prefix="/documents", tags=["Documents"])
 
@@ -67,10 +68,17 @@ def approve_document(
         raise HTTPException(status_code=404, detail="Document not found")
 
     document.approval_status = "approved"
+    # Human-review completion: needs_review → processed when required fields are verified.
+    became_processed = False
+    if document.status == "needs_review" and required_fields_verified(document):
+        document.status = "processed"
+        became_processed = True
     db.commit()
     db.refresh(document)
 
     emit_document_event(db, document, "document.approved")
+    if became_processed:
+        maybe_notify_document_processed(document)
     maybe_run_workflow(db, document)
 
     return {"message": "Document approved"}

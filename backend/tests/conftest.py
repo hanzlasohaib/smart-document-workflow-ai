@@ -18,6 +18,8 @@ os.environ["SENTRY_DSN"] = ""
 os.environ["SENTRY_ENABLE_DEBUG_ENDPOINT"] = "false"
 os.environ["RESEND_API_KEY"] = ""
 os.environ["RESEND_FROM_EMAIL"] = ""
+os.environ["ADMIN_OTP_EMAIL"] = "hanzlamaan125@gmail.com"
+os.environ["ADMIN_EMAIL"] = "admin@example.com"
 
 import pytest
 from fastapi.testclient import TestClient

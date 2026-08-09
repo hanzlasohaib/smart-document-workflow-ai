@@ -6,6 +6,7 @@ from app.models.automation_log import AutomationLog
 from app.models.document import Document
 from app.models.extracted_field import ExtractedField
 from app.services.classification_service import classify_text
+from app.services.email_service import maybe_notify_document_processed
 from app.services.extraction_service import extract_fields
 from app.services.notification_service import emit_document_event, event_for_status
 from app.services.ocr_service import run_ocr
@@ -129,6 +130,10 @@ def process_document_pipeline(document_id: int):
         event = event_for_status(document.status)
         if event:
             emit_document_event(db, document, event)
+
+        # Best-effort transactional email; must not affect pipeline outcome.
+        if document.status == "processed":
+            maybe_notify_document_processed(document)
 
         # Workflow is deferred until verify + approval gates (PAS-04).
         db.add(

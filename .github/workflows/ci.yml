@@ -18,6 +18,7 @@ on:
 jobs:
   backend:
     runs-on: ubuntu-latest
+
     defaults:
       run:
         working-directory: backend
@@ -58,6 +59,7 @@ jobs:
           alembic current | grep -E "004_admin_otp_challenges|head"
   frontend:
     runs-on: ubuntu-latest
+
     defaults:
       run:
         working-directory: frontend

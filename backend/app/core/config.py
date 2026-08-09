@@ -52,6 +52,10 @@ class Settings(BaseSettings):
     AUTH_RATE_LIMIT_REQUESTS: int = 20
     AUTH_RATE_LIMIT_WINDOW_SECONDS: int = 60
 
+    # Transactional email via Resend (optional; no-op when unset)
+    RESEND_API_KEY: str | None = None
+    RESEND_FROM_EMAIL: str | None = None
+
     def cors_origin_list(self) -> list[str]:
         return [o.strip() for o in self.CORS_ORIGINS.split(",") if o.strip()]
 
@@ -62,6 +66,9 @@ class Settings(BaseSettings):
         if backend == "supabase":
             return bool(self.SUPABASE_URL and self.SUPABASE_SERVICE_ROLE_KEY)
         return False
+
+    def resend_configured(self) -> bool:
+        return bool(self.RESEND_API_KEY and self.RESEND_FROM_EMAIL)
 
 
 settings = Settings()

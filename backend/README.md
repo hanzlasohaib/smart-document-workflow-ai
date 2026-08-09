@@ -19,7 +19,23 @@ Architecture: **PAS 1.0.0** (Frozen). Delivery: [docs/IMPLEMENTATION_ROADMAP.md]
 - Storage adapter (`local` or `supabase`)
 - In-process job enqueue boundary ([queue deferred](../docs/ops/QUEUE_DEFERRAL.md) until ADR-02-004 triggers)
 - Structured JSON logs + correlation IDs; optional Sentry (`SENTRY_DSN`)
+- Optional transactional email via Resend (`RESEND_API_KEY`)
 - pytesseract / spaCy / scikit-learn classifier
+
+### Email notifications (Resend)
+
+When both `RESEND_API_KEY` and `RESEND_FROM_EMAIL` are set, the API sends a transactional email to the **document owner's account email** after the processing pipeline finishes with status `processed` (high-confidence success path). The message includes the document name and status. Delivery is best-effort: failures are logged and never fail the pipeline. Leave the vars unset locally to skip sending.
+
+| Variable | Purpose |
+|---|---|
+| `RESEND_API_KEY` | API key from the Resend dashboard |
+| `RESEND_FROM_EMAIL` | Verified sender, e.g. `Smart Docs <noreply@yourdomain.com>` |
+
+**Local:** add both to `backend/.env` (see `.env.example`). Use Resend’s `onboarding@resend.dev` sender only for sandbox tests.
+
+**Render:** set `RESEND_API_KEY` and `RESEND_FROM_EMAIL` as environment variables on the API service (same values as production Resend domain/sender). Do not commit keys.
+
+Flow: upload → background pipeline → OCR/classify/extract → status `processed` → in-app notification + Resend email to `User.email`.
 
 ### Sentry (error tracking)
 

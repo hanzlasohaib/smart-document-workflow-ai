@@ -21,6 +21,26 @@ Architecture: **PAS 1.0.0** (Frozen). Delivery: [docs/IMPLEMENTATION_ROADMAP.md]
 - Structured JSON logs + correlation IDs; optional Sentry (`SENTRY_DSN`)
 - pytesseract / spaCy / scikit-learn classifier
 
+### Sentry (error tracking)
+
+When `SENTRY_DSN` is set, the API initializes Sentry before the FastAPI app starts (error events + logging breadcrumbs; `send_default_pii=False`; tracing sample rate from `SENTRY_TRACES_SAMPLE_RATE`, default `0.1`). `SENTRY_ENVIRONMENT` labels events (e.g. `local`, `staging`, `production`).
+
+| Variable | Purpose |
+|---|---|
+| `SENTRY_DSN` | Project DSN from Sentry (required to enable; leave unset to disable) |
+| `SENTRY_ENVIRONMENT` | Environment tag (default `local`) |
+| `SENTRY_TRACES_SAMPLE_RATE` | Performance tracing sample rate (default `0.1`) |
+| `SENTRY_ENABLE_DEBUG_ENDPOINT` | When `true`, mounts `GET /sentry-debug` which raises a test exception |
+
+Controlled verification (local/staging only):
+
+1. Set `SENTRY_DSN` and `SENTRY_ENABLE_DEBUG_ENDPOINT=true`.
+2. Restart the API, then `GET /sentry-debug` (expects HTTP 500).
+3. Confirm the event in the Sentry project Issues view.
+4. Set `SENTRY_ENABLE_DEBUG_ENDPOINT=false` (or remove the route) after verification — do not leave it enabled in production.
+
+On Render: add `SENTRY_DSN` (and optionally `SENTRY_ENVIRONMENT=production`) as environment variables; do not commit the DSN.
+
 ---
 
 ## Setup
@@ -85,6 +105,7 @@ CI runs lint, pytest, and Docker image build (`.github/workflows/ci.yml`).
 | Review | `GET /document/{id}`, `PUT /document/{id}/fields`, `PUT /field/{id}` | Owner or admin; bulk verify preferred |
 | Notifications | `GET /`, `POST /{id}/read` | Own notifications; includes `document_id` when set |
 | Probes | `GET /live`, `/ready`, `/health` | Unversioned |
+| Sentry (opt-in) | `GET /sentry-debug` | Only when `SENTRY_ENABLE_DEBUG_ENDPOINT=true` |
 
 List responses: `{ items, total, page, page_size, pages }` with `page` / `page_size` query params.
 

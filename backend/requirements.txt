@@ -52,6 +52,7 @@ python-dotenv==1.2.1
 python-jose==3.5.0
 python-multipart==0.0.22
 requests==2.34.2
+resend==2.35.0
 rich==15.0.0
 rsa==4.9.1
 scikit-learn==1.8.0

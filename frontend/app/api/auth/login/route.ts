@@ -23,6 +23,15 @@ export async function POST(request: Request) {
     return NextResponse.json(data, { status: upstream.status });
   }
 
+  if (data.requires_otp || data.challenge_id) {
+    return NextResponse.json({
+      requires_otp: true,
+      challenge_id: data.challenge_id,
+      message: data.message ?? "Administrator verification required",
+      otp_destination: data.otp_destination,
+    });
+  }
+
   const response = NextResponse.json({
     access_token: data.access_token,
     token_type: data.token_type ?? "bearer",

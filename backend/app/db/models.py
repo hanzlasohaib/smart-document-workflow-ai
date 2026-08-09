@@ -1,5 +1,6 @@
 """Import all ORM models so Alembic and metadata see the full schema."""
 
+from app.models.admin_otp_challenge import AdminOtpChallenge
 from app.models.automation_log import AutomationLog
 from app.models.document import Document
 from app.models.extracted_field import ExtractedField
@@ -14,4 +15,5 @@ __all__ = [
     "Notification",
     "AutomationLog",
     "RefreshToken",
+    "AdminOtpChallenge",
 ]

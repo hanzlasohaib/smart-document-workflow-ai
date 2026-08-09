@@ -17,16 +17,37 @@ import { queryKeys } from "@/lib/api/query-keys";
 import type { User } from "@/lib/api/types";
 import { clearAccessToken, getAccessToken, setAccessToken } from "@/lib/auth/token";
 
+export type AdminOtpChallenge = {
+  kind: "otp_required";
+  challengeId: string;
+  otpDestination: string;
+  message: string;
+};
+
+export type LoginResult =
+  | { kind: "authenticated"; user: User }
+  | AdminOtpChallenge;
+
 type AuthContextValue = {
   user: User | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<User>;
+  login: (email: string, password: string) => Promise<LoginResult>;
+  verifyAdminOtp: (challengeId: string, code: string) => Promise<User>;
+  resendAdminOtp: (challengeId: string) => Promise<AdminOtpChallenge>;
   register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshSession: () => Promise<boolean>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
+
+function detailMessage(data: unknown, fallback: string): string {
+  if (data && typeof data === "object" && "detail" in data) {
+    const detail = (data as { detail?: unknown }).detail;
+    if (typeof detail === "string") return detail;
+  }
+  return fallback;
+}
 
 async function fetchMe(): Promise<User> {
   const { data } = await api.get<User>("/auth/me");
@@ -73,7 +94,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
 
   const login = useCallback(
-    async (email: string, password: string) => {
+    async (email: string, password: string): Promise<LoginResult> => {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         credentials: "include",
@@ -82,9 +103,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        throw new Error(
-          typeof data.detail === "string" ? data.detail : "Invalid credentials",
-        );
+        throw new Error(detailMessage(data, "Invalid credentials"));
+      }
+
+      if (data.requires_otp || data.challenge_id) {
+        return {
+          kind: "otp_required",
+          challengeId: String(data.challenge_id),
+          otpDestination: String(data.otp_destination ?? ""),
+          message: String(data.message ?? "Administrator verification required"),
+        };
+      }
+
+      setAccessToken(data.access_token);
+      const user = await fetchMe();
+      queryClient.setQueryData(queryKeys.auth.me, user);
+      return { kind: "authenticated", user };
+    },
+    [queryClient],
+  );
+
+  const verifyAdminOtp = useCallback(
+    async (challengeId: string, code: string) => {
+      const res = await fetch("/api/auth/admin/verify-otp", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ challenge_id: challengeId, code }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(detailMessage(data, "Invalid verification code"));
       }
       setAccessToken(data.access_token);
       const user = await fetchMe();
@@ -94,6 +143,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [queryClient],
   );
 
+  const resendAdminOtp = useCallback(async (challengeId: string): Promise<AdminOtpChallenge> => {
+    const res = await fetch("/api/auth/admin/resend-otp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ challenge_id: challengeId }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(detailMessage(data, "Could not resend verification code"));
+    }
+    return {
+      kind: "otp_required",
+      challengeId: String(data.challenge_id),
+      otpDestination: String(data.otp_destination ?? ""),
+      message: String(data.message ?? "Administrator verification required"),
+    };
+  }, []);
+
   const register = useCallback(async (name: string, email: string, password: string) => {
     const res = await fetch("/api/auth/register", {
       method: "POST",
@@ -102,9 +169,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
-      throw new Error(
-        typeof data.detail === "string" ? data.detail : "Registration failed",
-      );
+      throw new Error(detailMessage(data, "Registration failed"));
     }
   }, []);
 
@@ -124,11 +189,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user: meQuery.data ?? null,
       loading: !bootstrapped || (!!getAccessToken() && meQuery.isLoading),
       login,
+      verifyAdminOtp,
+      resendAdminOtp,
       register,
       logout,
       refreshSession,
     }),
-    [meQuery.data, bootstrapped, meQuery.isLoading, login, register, logout, refreshSession],
+    [
+      meQuery.data,
+      bootstrapped,
+      meQuery.isLoading,
+      login,
+      verifyAdminOtp,
+      resendAdminOtp,
+      register,
+      logout,
+      refreshSession,
+    ],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

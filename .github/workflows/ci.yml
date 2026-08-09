@@ -1,11 +1,3 @@
-Check failure on line 1 in .github/workflows/ci.yml
-
-
-GitHub Actions
-/ .github/workflows/ci.yml
-Invalid workflow file
-
-You have an error in your yaml syntax
 name: CI
 on:
   push:

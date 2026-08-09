@@ -34,8 +34,11 @@ export default function SignupPage() {
     setError(null);
     try {
       await registerUser(values.name, values.email, values.password);
-      const user = await login(values.email, values.password);
-      router.replace(user.role === "admin" ? "/admin" : "/dashboard");
+      const result = await login(values.email, values.password);
+      if (result.kind !== "authenticated") {
+        throw new Error("Unexpected administrator verification after signup");
+      }
+      router.replace(result.user.role === "admin" ? "/admin" : "/dashboard");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Signup failed");
     }

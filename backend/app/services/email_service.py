@@ -64,6 +64,25 @@ def send_document_processed_email(
     return send_email(to=to_email, subject=subject, html=html, text=text)
 
 
+def send_admin_otp_email(*, to_email: str, code: str) -> bool:
+    """Send an administrator login verification code. Never log the code."""
+    subject = "Administrator login verification code"
+    text = (
+        "Your administrator login verification code for Smart Document Workflow is:\n\n"
+        f"{code}\n\n"
+        "This code expires shortly. If you did not attempt to sign in, ignore this email.\n"
+    )
+    html = (
+        "<p>Your <strong>administrator login verification code</strong> "
+        "for Smart Document Workflow is:</p>"
+        f"<p style=\"font-size:24px;letter-spacing:4px;\"><strong>{escape(code)}</strong></p>"
+        "<p>This code expires shortly. If you did not attempt to sign in, ignore this email.</p>"
+    )
+    # Intentionally do not include the OTP value in log messages.
+    logger.info("Sending admin OTP email to %s", to_email)
+    return send_email(to=to_email, subject=subject, html=html, text=text)
+
+
 def maybe_notify_document_processed(document: Document) -> None:
     """
     Best-effort owner email when pipeline status is processed.

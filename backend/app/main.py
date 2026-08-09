@@ -14,19 +14,25 @@ from app.routes import auth, documents, review
 configure_logging(settings.LOG_FORMAT)
 logger = logging.getLogger(__name__)
 
+# Initialize Sentry before the FastAPI app is created (DSN from env only).
 if settings.SENTRY_DSN:
     import sentry_sdk
     from sentry_sdk.integrations.fastapi import FastApiIntegration
+    from sentry_sdk.integrations.logging import LoggingIntegration
     from sentry_sdk.integrations.starlette import StarletteIntegration
 
     sentry_sdk.init(
         dsn=settings.SENTRY_DSN,
         environment=settings.SENTRY_ENVIRONMENT,
         integrations=[
+            LoggingIntegration(
+                level=logging.INFO,
+                event_level=logging.ERROR,
+            ),
             StarletteIntegration(transaction_style="endpoint"),
             FastApiIntegration(transaction_style="endpoint"),
         ],
-        traces_sample_rate=0.0,
+        traces_sample_rate=settings.SENTRY_TRACES_SAMPLE_RATE,
         send_default_pii=False,
     )
 
@@ -54,6 +60,12 @@ app.include_router(api_router)
 app.include_router(auth.router, deprecated=True)
 app.include_router(documents.router, deprecated=True)
 app.include_router(review.router, deprecated=True)
+
+# Opt-in Sentry verification only (never enable permanently in production).
+if settings.SENTRY_ENABLE_DEBUG_ENDPOINT:
+    from app.routes import sentry_debug
+
+    app.include_router(sentry_debug.router)
 
 
 @app.get("/")

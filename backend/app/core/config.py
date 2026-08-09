@@ -43,6 +43,10 @@ class Settings(BaseSettings):
     LOG_FORMAT: str = "json"  # json | text
     SENTRY_DSN: str | None = None
     SENTRY_ENVIRONMENT: str = "local"
+    # Production-friendly default; raise temporarily only when validating capture.
+    SENTRY_TRACES_SAMPLE_RATE: float = 0.1
+    # Opt-in only — keep false in production; remove route after verification if desired.
+    SENTRY_ENABLE_DEBUG_ENDPOINT: bool = False
 
     # Auth rate limit (per client IP, sliding window). 0 disables.
     AUTH_RATE_LIMIT_REQUESTS: int = 20

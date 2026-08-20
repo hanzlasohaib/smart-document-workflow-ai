@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
+import { OfflineBanner } from "@/components/offline-banner";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth/session";
 import { cn } from "@/lib/utils";
@@ -33,12 +34,11 @@ export function PortalShell({
 
   return (
     <div className="min-h-screen bg-paper text-ink">
-      <div className="pointer-events-none absolute inset-0 bg-grid opacity-40" />
       <div className="relative mx-auto flex min-h-screen max-w-6xl flex-col px-4 py-6 md:px-8">
-        <header className="mb-8 flex flex-wrap items-center justify-between gap-4 border-b border-ink/10 pb-4">
-          <div>
-            <p className="font-display text-lg tracking-tight">{title}</p>
-            <p className="text-sm text-ink/60">{user?.email}</p>
+        <header className="mb-8 flex flex-wrap items-center justify-between gap-4 border-b border-border pb-5">
+          <div className="min-w-0">
+            <p className="font-display text-lg tracking-[-0.03em]">{title}</p>
+            <p className="truncate text-sm text-ink-muted">{user?.email}</p>
           </div>
           <Button
             variant="outline"
@@ -54,7 +54,7 @@ export function PortalShell({
         <div className="grid gap-8 md:grid-cols-[220px_1fr]">
           <nav
             aria-label="Portal"
-            className="flex flex-row flex-wrap gap-1 rounded-xl border border-ink/10 bg-white/50 p-2 md:flex-col"
+            className="flex flex-row flex-wrap gap-1 rounded-xl border border-border bg-surface p-2 shadow-surface md:flex-col md:self-start"
           >
             {nav.map((item) => {
               const active = current === item.href;
@@ -64,10 +64,10 @@ export function PortalShell({
                   href={item.href}
                   aria-current={active ? "page" : undefined}
                   className={cn(
-                    "rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                    "inline-flex min-h-11 items-center rounded-md px-3 py-2 text-sm font-medium transition-colors",
                     active
-                      ? "bg-ink text-paper shadow-sm"
-                      : "text-ink/65 hover:bg-ink/5 hover:text-ink",
+                      ? "bg-ink text-paper"
+                      : "text-ink-muted hover:bg-ink/[0.04] hover:text-ink",
                   )}
                 >
                   {item.label}
@@ -75,7 +75,10 @@ export function PortalShell({
               );
             })}
           </nav>
-          <main className="min-w-0">{children}</main>
+          <main id="main-content" className="min-w-0 pb-10" tabIndex={-1}>
+            <OfflineBanner />
+            {children}
+          </main>
         </div>
       </div>
     </div>

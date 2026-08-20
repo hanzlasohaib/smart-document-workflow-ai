@@ -7,7 +7,10 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { PageEnter } from "@/components/page-enter";
+import { PageHeader } from "@/components/page-header";
 import { PaginationControls } from "@/components/pagination-controls";
+import { QueryState } from "@/components/query-state";
+import { Surface } from "@/components/surface";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api/client";
 import { queryKeys } from "@/lib/api/query-keys";
@@ -57,62 +60,67 @@ export default function NotificationsPage() {
 
   return (
     <PageEnter>
-      <h1 className="font-display text-3xl tracking-tight">Notifications</h1>
-      <p className="mt-2 text-ink/60">
-        Status updates for your documents. Opening an item marks it as read.
-      </p>
+      <PageHeader
+        title="Notifications"
+        description="Status updates for your documents. Opening an item marks it as read."
+      />
       <div className="mt-8 space-y-3">
-        {list.isLoading && <p className="text-sm text-ink/50">Loading…</p>}
-        {items.map((n) => (
-          <button
-            key={n.id}
-            type="button"
-            onClick={() => openNotification(n)}
-            className="w-full rounded-xl border border-ink/10 bg-white/70 p-4 text-left transition-colors hover:bg-ink/[0.03]"
-          >
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div className="min-w-0">
-                <p className="font-medium">
-                  {n.title}
-                  {!n.is_read && (
-                    <span className="ml-2 text-xs font-normal text-accent">Unread</span>
+        <QueryState
+          isLoading={list.isLoading}
+          isError={list.isError}
+          error={list.error}
+          isEmpty={items.length === 0}
+          onRetry={() => void list.refetch()}
+          empty={
+            <Surface className="border-dashed px-4 py-10 text-center shadow-none">
+              <p className="text-sm text-ink-muted">No notifications yet.</p>
+              <Button asChild className="mt-4" size="sm">
+                <Link href="/upload">Upload a document</Link>
+              </Button>
+            </Surface>
+          }
+        >
+          {items.map((n) => (
+            <button
+              key={n.id}
+              type="button"
+              onClick={() => openNotification(n)}
+              className="w-full rounded-xl border border-border bg-surface p-4 text-start shadow-surface transition-colors hover:bg-ink/[0.03]"
+            >
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="break-words [overflow-wrap:anywhere] font-medium">
+                    {n.title}
+                    {!n.is_read && (
+                      <span className="ms-2 text-xs font-semibold text-accent-ink">Unread</span>
+                    )}
+                  </p>
+                  <p className="mt-1 break-words [overflow-wrap:anywhere] text-sm text-ink-muted">
+                    {n.message}
+                  </p>
+                  {n.document_id != null && (
+                    <p className="mt-2 text-sm text-ink-subtle">Open document</p>
                   )}
-                </p>
-                <p className="mt-1 text-sm text-ink/70">{n.message}</p>
-                {n.document_id != null && (
-                  <p className="mt-2 text-xs text-ink/45">Open document →</p>
+                </div>
+                {!n.is_read && n.document_id == null && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      markRead.mutate(n.id);
+                    }}
+                    disabled={markRead.isPending}
+                  >
+                    Mark read
+                  </Button>
                 )}
               </div>
-              {!n.is_read && n.document_id == null && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    markRead.mutate(n.id);
-                  }}
-                  disabled={markRead.isPending}
-                >
-                  Mark read
-                </Button>
-              )}
-            </div>
-          </button>
-        ))}
-        {!list.isLoading && items.length === 0 && (
-          <div className="rounded-xl border border-dashed border-ink/15 bg-white/40 px-4 py-10 text-center">
-            <p className="text-sm text-ink/60">No notifications yet.</p>
-            <Button asChild className="mt-4" size="sm">
-              <Link href="/upload">Upload a document</Link>
-            </Button>
-          </div>
-        )}
+            </button>
+          ))}
+        </QueryState>
       </div>
-      <PaginationControls
-        page={page}
-        pages={list.data?.pages ?? 0}
-        onPageChange={setPage}
-      />
+      <PaginationControls page={page} pages={list.data?.pages ?? 0} onPageChange={setPage} />
     </PageEnter>
   );
 }

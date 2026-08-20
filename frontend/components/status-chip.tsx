@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 
 import { Badge } from "@/components/ui/badge";
 
@@ -24,12 +24,14 @@ function labelFor(status: string) {
 
 export function StatusChip({ status }: { status: string }) {
   const variant = STATUS_VARIANT[status] ?? "default";
+  const reduceMotion = useReducedMotion();
+
   return (
     <motion.span
       key={status}
-      initial={{ opacity: 0.4, y: 2 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.2 }}
+      initial={reduceMotion ? { opacity: 1 } : { opacity: 0.45 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.18 }}
       className="inline-flex"
     >
       <Badge variant={variant} aria-label={`Status: ${labelFor(status)}`}>

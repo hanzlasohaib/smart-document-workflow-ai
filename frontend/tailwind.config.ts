@@ -9,20 +9,45 @@ export default {
   theme: {
     extend: {
       colors: {
-        ink: "var(--ink)",
+        ink: {
+          DEFAULT: "var(--ink)",
+          muted: "var(--ink-muted)",
+          subtle: "var(--ink-subtle)",
+        },
         paper: "var(--paper)",
-        accent: "var(--accent)",
-        ring: "var(--accent)",
+        surface: "var(--surface)",
+        accent: {
+          DEFAULT: "var(--accent)",
+          hover: "var(--accent-hover)",
+          ink: "var(--accent-ink)",
+        },
+        border: "var(--border)",
+        danger: {
+          DEFAULT: "var(--danger)",
+          soft: "var(--danger-soft)",
+        },
+        success: {
+          DEFAULT: "var(--success)",
+          soft: "var(--success-soft)",
+        },
+        warn: {
+          DEFAULT: "var(--warn)",
+          soft: "var(--warn-soft)",
+        },
+        info: {
+          soft: "var(--info-soft)",
+        },
+        ring: "var(--ring)",
       },
       fontFamily: {
         display: ["var(--font-display)", "Georgia", "serif"],
         sans: ["var(--font-sans)", "ui-sans-serif", "system-ui", "sans-serif"],
       },
-      backgroundImage: {
-        grid: "linear-gradient(to right, rgb(15 23 42 / 0.05) 1px, transparent 1px), linear-gradient(to bottom, rgb(15 23 42 / 0.05) 1px, transparent 1px)",
+      boxShadow: {
+        surface: "var(--shadow-surface)",
       },
-      backgroundSize: {
-        grid: "28px 28px",
+      transitionTimingFunction: {
+        out: "var(--ease-out)",
       },
     },
   },

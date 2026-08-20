@@ -1,5 +1,6 @@
 "use client";
 
+import { LoadingScreen } from "@/components/loading-screen";
 import { PortalShell } from "@/components/portal-shell";
 import { useRequireAuth } from "@/lib/auth/session";
 
@@ -15,11 +16,7 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
   const { user, loading } = useRequireAuth();
 
   if (loading || !user) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-paper text-ink/60">
-        Loading…
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   return (

@@ -1,0 +1,254 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-20T07:01:00.000Z",
+  "title": "Design System: Smart Document Workflow",
+  "extensions": {
+    "colorMeta": {
+      "ink": {
+        "role": "neutral",
+        "displayName": "Docket Navy",
+        "canonical": "#0f1c2e",
+        "tonalRamp": ["#060b12", "#0f1c2e", "#1c3148", "#3d4f63", "#4a5d73", "#7a8a9a", "#c9d1dc", "#eef2f7"]
+      },
+      "ink-muted": {
+        "role": "neutral",
+        "displayName": "Docket Navy Muted",
+        "canonical": "#3d4f63",
+        "tonalRamp": ["#1c3148", "#2a3d50", "#3d4f63", "#4a5d73", "#6b7c8d", "#9aa8b5", "#c9d1dc", "#eef2f7"]
+      },
+      "ink-subtle": {
+        "role": "neutral",
+        "displayName": "Docket Navy Subtle",
+        "canonical": "#4a5d73",
+        "tonalRamp": ["#1c3148", "#3d4f63", "#4a5d73", "#6b7c8d", "#9aa8b5", "#c9d1dc", "#e8edf4", "#f3f5f8"]
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Cool Bond",
+        "canonical": "#f3f5f8",
+        "tonalRamp": ["#0f1c2e", "#3d4f63", "#6b7c8d", "#9aa8b5", "#c9d1dc", "#e8edf4", "#f3f5f8", "#ffffff"]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Filing White",
+        "canonical": "#ffffff",
+        "tonalRamp": ["#0f1c2e", "#3d4f63", "#9aa8b5", "#c9d1dc", "#e8edf4", "#f3f5f8", "#fafbfc", "#ffffff"]
+      },
+      "accent": {
+        "role": "primary",
+        "displayName": "Seal Gold",
+        "canonical": "#e8a317",
+        "tonalRamp": ["#7a4e00", "#8a5a00", "#b87a0c", "#d49210", "#e8a317", "#f0c45a", "#f6d98a", "#fff7e6"]
+      },
+      "accent-hover": {
+        "role": "primary",
+        "displayName": "Seal Gold Hover",
+        "canonical": "#d49210",
+        "tonalRamp": ["#7a4e00", "#8a5a00", "#b87a0c", "#d49210", "#e8a317", "#f0c45a", "#f6d98a", "#fff7e6"]
+      },
+      "accent-ink": {
+        "role": "primary",
+        "displayName": "Seal Gold Ink",
+        "canonical": "#7a4e00",
+        "tonalRamp": ["#4a3000", "#7a4e00", "#8a5a00", "#b87a0c", "#d49210", "#e8a317", "#f0c45a", "#fff7e6"]
+      },
+      "border": {
+        "role": "neutral",
+        "displayName": "Docket Rule",
+        "canonical": "#c9d1dc",
+        "tonalRamp": ["#3d4f63", "#6b7c8d", "#9aa8b5", "#c9d1dc", "#e8edf4", "#eef2f7", "#f3f5f8", "#ffffff"]
+      },
+      "ring": {
+        "role": "primary",
+        "displayName": "Focus Brass",
+        "canonical": "#8a5a00",
+        "tonalRamp": ["#4a3000", "#7a4e00", "#8a5a00", "#b87a0c", "#d49210", "#e8a317", "#f0c45a", "#fff7e6"]
+      },
+      "danger": {
+        "role": "neutral",
+        "displayName": "Danger",
+        "canonical": "#9f1239",
+        "tonalRamp": ["#4c0a1c", "#9f1239", "#be123c", "#e11d48", "#fb7185", "#fecdd3", "#fff1f4", "#fff8f8"]
+      },
+      "danger-soft": {
+        "role": "neutral",
+        "displayName": "Danger Soft",
+        "canonical": "#fff1f4",
+        "tonalRamp": ["#9f1239", "#e11d48", "#fb7185", "#fecdd3", "#ffe4e8", "#fff1f4", "#fff7f8", "#ffffff"]
+      },
+      "success": {
+        "role": "neutral",
+        "displayName": "Success",
+        "canonical": "#065f46",
+        "tonalRamp": ["#022c22", "#065f46", "#047857", "#059669", "#34d399", "#a7f3d0", "#ecfdf5", "#f0fdf9"]
+      },
+      "success-soft": {
+        "role": "neutral",
+        "displayName": "Success Soft",
+        "canonical": "#ecfdf5",
+        "tonalRamp": ["#065f46", "#059669", "#6ee7b7", "#a7f3d0", "#d1fae5", "#ecfdf5", "#f0fdf9", "#ffffff"]
+      },
+      "warn": {
+        "role": "neutral",
+        "displayName": "Warn",
+        "canonical": "#92400e",
+        "tonalRamp": ["#431407", "#92400e", "#b45309", "#d97706", "#fbbf24", "#fde68a", "#fff7ed", "#fffbeb"]
+      },
+      "warn-soft": {
+        "role": "neutral",
+        "displayName": "Warn Soft",
+        "canonical": "#fff7ed",
+        "tonalRamp": ["#92400e", "#d97706", "#fbbf24", "#fde68a", "#ffedd5", "#fff7ed", "#fffbeb", "#ffffff"]
+      },
+      "info-soft": {
+        "role": "neutral",
+        "displayName": "Info Soft",
+        "canonical": "#eef3f8",
+        "tonalRamp": ["#0f1c2e", "#3d4f63", "#7a8a9a", "#c9d1dc", "#e8edf4", "#eef3f8", "#f3f5f8", "#ffffff"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Marketing hero only." },
+      "headline": { "displayName": "Headline", "purpose": "Portal page titles." },
+      "title": { "displayName": "Title", "purpose": "Auth cards and marketing subsections." },
+      "body": { "displayName": "Body", "purpose": "Default reading copy; 65ch on prose." },
+      "label": { "displayName": "Label", "purpose": "Buttons, nav, form labels." }
+    },
+    "shadows": [
+      {
+        "name": "surface",
+        "value": "0 1px 2px rgb(15 28 46 / 0.04), 0 8px 24px rgb(15 28 46 / 0.06)",
+        "purpose": "Elevated paperwork: Surface, portal nav, auth card, dialog."
+      },
+      {
+        "name": "input",
+        "value": "0 1px 2px rgb(15 28 46 / 0.05)",
+        "purpose": "Quiet lift on text fields."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-out",
+        "value": "cubic-bezier(0.23, 1, 0.32, 1)",
+        "purpose": "Default UI easing for color, transform, and shadow."
+      },
+      {
+        "name": "duration-control",
+        "value": "150ms",
+        "purpose": "Button and input state changes."
+      },
+      {
+        "name": "press-scale",
+        "value": "0.97",
+        "purpose": "Active press on buttons."
+      }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Seal gold stamp for the main action.",
+      "html": "<button class=\"ds-btn-primary\" type=\"button\">Upload</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 8px 16px; border: 0; border-radius: 6px; background: var(--accent, #e8a317); color: var(--ink, #0f1c2e); font: 500 0.875rem/1.4 \"Source Sans 3\", ui-sans-serif, system-ui, sans-serif; cursor: pointer; transition: background-color 150ms cubic-bezier(0.23, 1, 0.32, 1), transform 150ms cubic-bezier(0.23, 1, 0.32, 1); } .ds-btn-primary:hover { background: var(--accent-hover, #d49210); } .ds-btn-primary:focus-visible { outline: 2px solid var(--ring, #8a5a00); outline-offset: 3px; } .ds-btn-primary:active { transform: scale(0.97); }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Docket navy fill for a second action.",
+      "html": "<button class=\"ds-btn-secondary\" type=\"button\">Log in</button>",
+      "css": ".ds-btn-secondary { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 8px 16px; border: 0; border-radius: 6px; background: var(--ink, #0f1c2e); color: var(--paper, #f3f5f8); font: 500 0.875rem/1.4 \"Source Sans 3\", ui-sans-serif, system-ui, sans-serif; cursor: pointer; transition: background-color 150ms cubic-bezier(0.23, 1, 0.32, 1), transform 150ms cubic-bezier(0.23, 1, 0.32, 1); } .ds-btn-secondary:hover { background: rgb(15 28 46 / 0.90); } .ds-btn-secondary:focus-visible { outline: 2px solid var(--ring, #8a5a00); outline-offset: 3px; } .ds-btn-secondary:active { transform: scale(0.97); }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Quiet paperwork control.",
+      "html": "<button class=\"ds-btn-outline\" type=\"button\">Cancel</button>",
+      "css": ".ds-btn-outline { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 8px 12px; border: 1px solid var(--border, #c9d1dc); border-radius: 6px; background: var(--surface, #ffffff); color: var(--ink, #0f1c2e); font: 500 0.875rem/1.4 \"Source Sans 3\", ui-sans-serif, system-ui, sans-serif; cursor: pointer; } .ds-btn-outline:hover { background: rgb(15 28 46 / 0.04); } .ds-btn-outline:focus-visible { outline: 2px solid var(--ring, #8a5a00); outline-offset: 3px; } .ds-btn-outline:active { transform: scale(0.97); }"
+    },
+    {
+      "name": "Danger Button",
+      "kind": "button",
+      "refersTo": "button-danger",
+      "description": "Destructive confirm (delete, reject).",
+      "html": "<button class=\"ds-btn-danger\" type=\"button\">Delete</button>",
+      "css": ".ds-btn-danger { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 8px 16px; border: 0; border-radius: 6px; background: var(--danger, #9f1239); color: #fff; font: 500 0.875rem/1.4 \"Source Sans 3\", ui-sans-serif, system-ui, sans-serif; cursor: pointer; } .ds-btn-danger:hover { background: rgb(159 18 57 / 0.90); } .ds-btn-danger:focus-visible { outline: 2px solid var(--ring, #8a5a00); outline-offset: 3px; } .ds-btn-danger:active { transform: scale(0.97); }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Review and auth fields.",
+      "html": "<label class=\"ds-field\"><span class=\"ds-field-label\">Email</span><input class=\"ds-input\" type=\"email\" placeholder=\"name@company.com\" /></label>",
+      "css": ".ds-field { display: flex; flex-direction: column; gap: 8px; } .ds-field-label { font: 500 0.875rem/1.4 \"Source Sans 3\", ui-sans-serif, system-ui, sans-serif; color: var(--ink, #0f1c2e); } .ds-input { min-height: 44px; width: 100%; padding: 8px 12px; border: 1px solid var(--border, #c9d1dc); border-radius: 6px; background: var(--surface, #ffffff); color: var(--ink, #0f1c2e); font: 400 1rem/1.5 \"Source Sans 3\", ui-sans-serif, system-ui, sans-serif; box-shadow: 0 1px 2px rgb(15 28 46 / 0.05); } .ds-input::placeholder { color: var(--ink-subtle, #4a5d73); } .ds-input:focus-visible { outline: 2px solid var(--ring, #8a5a00); outline-offset: 2px; } .ds-input[aria-invalid=\"true\"] { border-color: var(--danger, #9f1239); }"
+    },
+    {
+      "name": "Surface",
+      "kind": "card",
+      "refersTo": "surface",
+      "description": "Elevated paperwork for lists, forms, and queues.",
+      "html": "<div class=\"ds-surface\"><p class=\"ds-surface-title\">invoice-april.pdf</p><p class=\"ds-surface-meta\">Invoice · 92%</p></div>",
+      "css": ".ds-surface { border: 1px solid var(--border, #c9d1dc); border-radius: 12px; background: var(--surface, #ffffff); padding: 16px; box-shadow: 0 1px 2px rgb(15 28 46 / 0.04), 0 8px 24px rgb(15 28 46 / 0.06); color: var(--ink, #0f1c2e); font: 400 1rem/1.6 \"Source Sans 3\", ui-sans-serif, system-ui, sans-serif; } .ds-surface-title { margin: 0; font-weight: 500; } .ds-surface-meta { margin: 4px 0 0; font-size: 0.875rem; color: var(--ink-muted, #3d4f63); }"
+    },
+    {
+      "name": "Status Chip",
+      "kind": "chip",
+      "refersTo": "chip-accent",
+      "description": "Processing status with a text label.",
+      "html": "<span class=\"ds-chip ds-chip-accent\">needs review</span>",
+      "css": ".ds-chip { display: inline-flex; align-items: center; border-radius: 6px; padding: 2px 8px; font: 500 0.75rem/1.4 \"Source Sans 3\", ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.04em; } .ds-chip-accent { background: rgb(232 163 23 / 0.25); color: var(--accent-ink, #7a4e00); } .ds-chip:focus-visible { outline: 2px solid var(--ring, #8a5a00); outline-offset: 2px; }"
+    },
+    {
+      "name": "Portal Nav Item",
+      "kind": "nav",
+      "refersTo": "nav-item-active",
+      "description": "Active portal destination.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Portal\"><a class=\"ds-nav-item\" href=\"#\">Documents</a><a class=\"ds-nav-item ds-nav-item-active\" href=\"#\" aria-current=\"page\">Upload</a></nav>",
+      "css": ".ds-nav { display: flex; flex-direction: column; gap: 4px; padding: 8px; border: 1px solid var(--border, #c9d1dc); border-radius: 12px; background: var(--surface, #ffffff); box-shadow: 0 1px 2px rgb(15 28 46 / 0.04), 0 8px 24px rgb(15 28 46 / 0.06); } .ds-nav-item { display: inline-flex; align-items: center; min-height: 44px; padding: 8px 12px; border-radius: 6px; color: var(--ink-muted, #3d4f63); font: 500 0.875rem/1.4 \"Source Sans 3\", ui-sans-serif, system-ui, sans-serif; text-decoration: none; } .ds-nav-item:hover { background: rgb(15 28 46 / 0.04); color: var(--ink, #0f1c2e); } .ds-nav-item-active { background: var(--ink, #0f1c2e); color: var(--paper, #f3f5f8); } .ds-nav-item:focus-visible { outline: 2px solid var(--ring, #8a5a00); outline-offset: 2px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Review Docket",
+    "overview": "The interface is a stamped case file, not a dashboard skin and not a dark-tech console. Cool bond paper is the field; docket navy is the ink; seal gold is the stamp you press when the work is ready. Density is operational: lists, fields, and queues scan first. Display type (Fraunces) is the heading on the form, not a marketing poster.\n\nPersonality is restrained and accountable. Gold is rare. Surfaces stay quiet paperwork. Press feedback is tactile (scale 0.97) without theatrical motion. Confirmed rejections: decorative AI purple glow, emoji-driven UI, color-only status, dark-tech skins, and two-axis grid overlays on operate screens.",
+    "keyCharacteristics": [
+      "Light paper canvas with white elevated surfaces",
+      "Navy ink for text and selected navigation",
+      "Seal gold reserved for primary action",
+      "Fraunces for titles, Source Sans 3 for body and UI",
+      "44px minimum controls; 12px surfaces; 6px controls",
+      "Hybrid depth: flat page, bordered card with a soft offset shadow"
+    ],
+    "rules": [
+      { "name": "The Rare Seal Rule", "body": "Seal gold is the primary action, not atmosphere. Do not flood screens with gold fills, gold text, or gold borders.", "section": "colors" },
+      { "name": "The Contrast-Not-Opacity Rule", "body": "Muted text uses ink-muted or ink-subtle. Do not fade ink with alpha for body or labels.", "section": "colors" },
+      { "name": "The Form-Heading Rule", "body": "Fraunces is for titles. Do not set body, tables, or chips in the display face.", "section": "typography" },
+      { "name": "The Tracking Floor Rule", "body": "Display tracking is −0.03em. Do not go tighter than −0.04em.", "section": "typography" },
+      { "name": "The Flat-Page Rule", "body": "The canvas stays flat. Shadow appears on elevated paperwork, not on the viewport background.", "section": "elevation" },
+      { "name": "The One Elevation Rule", "body": "Border or shadow may suffice; the incumbent Surface uses both once. Do not stack a second large halo.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do put primary actions on Seal Gold with Docket Navy type.",
+      "Do keep interactive targets at least 44px tall.",
+      "Do pair every status color with a text label.",
+      "Do wrap or clamp long filenames; never let them blow the layout.",
+      "Do use ink-muted for supporting copy instead of transparent navy."
+    ],
+    "donts": [
+      "Don't use decorative AI purple glow, neon gradients, or dark-tech chrome.",
+      "Don't drive UI with emoji or Unicode as an icon system.",
+      "Don't communicate status by color alone.",
+      "Don't put two-axis grid overlays on operate (portal) screens.",
+      "Don't spend Seal Gold on large backgrounds or body text.",
+      "Don't set body copy in Fraunces.",
+      "Don't invent RAG, vector, or multi-agent chrome that the product does not have."
+    ]
+  }
+}

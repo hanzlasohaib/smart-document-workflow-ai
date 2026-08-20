@@ -1,11 +1,14 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { motion } from "framer-motion";
 import Link from "next/link";
 
+import { Filename } from "@/components/filename";
 import { PageEnter } from "@/components/page-enter";
+import { PageHeader } from "@/components/page-header";
+import { QueryState } from "@/components/query-state";
 import { StatusChip } from "@/components/status-chip";
+import { Surface } from "@/components/surface";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api/client";
 import { queryKeys } from "@/lib/api/query-keys";
@@ -33,47 +36,48 @@ export default function AdminDashboardPage() {
 
   return (
     <PageEnter>
-      <motion.div
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-        className="space-y-8"
-      >
-        <div>
-          <h1 className="font-display text-3xl tracking-tight">Operations</h1>
-          <p className="mt-2 text-ink/60">
-            {pending.data?.total ?? 0} pending · {all.data?.total ?? 0} total documents
-          </p>
-        </div>
+      <div className="space-y-8">
+        <PageHeader
+          title="Operations"
+          description={`${pending.data?.total ?? 0} pending · ${all.data?.total ?? 0} total documents`}
+        />
         <Button asChild>
           <Link href="/admin/pending">Open pending queue</Link>
         </Button>
         <section>
-          <h2 className="mb-3 text-sm font-medium uppercase tracking-wide text-ink/50">
+          <h2 className="mb-3 text-sm font-medium uppercase tracking-wide text-ink-subtle">
             Latest pending
           </h2>
-          <div className="space-y-2 rounded-xl border border-ink/10 bg-white/70 p-4">
-            {(pending.data?.items ?? []).map((doc) => (
-              <Link
-                key={doc.id}
-                href={`/admin/review/${doc.id}`}
-                className="flex items-center justify-between gap-3 rounded-md px-2 py-2 hover:bg-ink/5"
-              >
-                <span className="truncate">{doc.original_filename}</span>
-                <StatusChip status={doc.status} />
-              </Link>
-            ))}
-            {!pending.isLoading && (pending.data?.total ?? 0) === 0 && (
-              <div className="py-6 text-center">
-                <p className="text-sm text-ink/50">Queue is clear.</p>
-                <Button asChild className="mt-4" size="sm" variant="outline">
-                  <Link href="/admin/documents">Browse all documents</Link>
-                </Button>
-              </div>
-            )}
-          </div>
+          <Surface className="divide-y divide-border">
+            <QueryState
+              isLoading={pending.isLoading}
+              isError={pending.isError}
+              error={pending.error}
+              isEmpty={(pending.data?.total ?? 0) === 0}
+              onRetry={() => void pending.refetch()}
+              empty={
+                <div className="px-4 py-10 text-center">
+                  <p className="text-sm text-ink-muted">Queue is clear.</p>
+                  <Button asChild className="mt-4" size="sm" variant="outline">
+                    <Link href="/admin/documents">Browse all documents</Link>
+                  </Button>
+                </div>
+              }
+            >
+              {(pending.data?.items ?? []).map((doc) => (
+                <Link
+                  key={doc.id}
+                  href={`/admin/review/${doc.id}`}
+                  className="flex min-h-14 items-center justify-between gap-3 px-4 py-3 hover:bg-ink/[0.03]"
+                >
+                  <Filename name={doc.original_filename} className="font-medium" />
+                  <StatusChip status={doc.status} />
+                </Link>
+              ))}
+            </QueryState>
+          </Surface>
         </section>
-      </motion.div>
+      </div>
     </PageEnter>
   );
 }

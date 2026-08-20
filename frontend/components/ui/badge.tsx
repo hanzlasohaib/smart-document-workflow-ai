@@ -8,12 +8,12 @@ const badgeVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-ink/10 text-ink",
-        accent: "bg-accent/25 text-ink",
-        success: "bg-emerald-100 text-emerald-900",
-        warn: "bg-amber-100 text-amber-950",
-        danger: "bg-rose-100 text-rose-900",
-        muted: "bg-slate-100 text-slate-700",
+        default: "bg-info-soft text-ink",
+        accent: "bg-accent/25 text-accent-ink",
+        success: "bg-success-soft text-success",
+        warn: "bg-warn-soft text-warn",
+        danger: "bg-danger-soft text-danger",
+        muted: "bg-paper text-ink-muted",
       },
     },
     defaultVariants: { variant: "default" },
@@ -24,6 +24,6 @@ export function Badge({
   className,
   variant,
   ...props
-}: React.HTMLAttributes<HTMLDivElement> & VariantProps<typeof badgeVariants>) {
-  return <div className={cn(badgeVariants({ variant }), className)} {...props} />;
+}: React.HTMLAttributes<HTMLSpanElement> & VariantProps<typeof badgeVariants>) {
+  return <span className={cn(badgeVariants({ variant }), className)} {...props} />;
 }

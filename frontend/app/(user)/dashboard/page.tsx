@@ -1,11 +1,14 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { motion } from "framer-motion";
 import Link from "next/link";
 
+import { Filename } from "@/components/filename";
 import { PageEnter } from "@/components/page-enter";
+import { PageHeader } from "@/components/page-header";
+import { QueryState } from "@/components/query-state";
 import { StatusChip } from "@/components/status-chip";
+import { Surface } from "@/components/surface";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api/client";
 import { queryKeys } from "@/lib/api/query-keys";
@@ -39,16 +42,11 @@ export default function UserDashboardPage() {
 
   return (
     <PageEnter>
-      <motion.div
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-        className="space-y-8"
-      >
-        <div>
-          <h1 className="font-display text-3xl tracking-tight">Welcome, {user?.name}</h1>
-          <p className="mt-2 text-ink/60">Your documents and recent activity.</p>
-        </div>
+      <div className="space-y-8">
+        <PageHeader
+          title={`Welcome, ${user?.name ?? "there"}`}
+          description="Your documents and recent activity."
+        />
         <div className="flex flex-wrap gap-3">
           <Button asChild>
             <Link href="/upload">Upload a document</Link>
@@ -63,41 +61,48 @@ export default function UserDashboardPage() {
           </Button>
         </div>
         <section>
-          <h2 className="mb-3 text-sm font-medium uppercase tracking-wide text-ink/50">
+          <h2 className="mb-3 text-sm font-medium uppercase tracking-wide text-ink-subtle">
             Recent documents
           </h2>
-          <div className="space-y-2 rounded-xl border border-ink/10 bg-white/70 p-4">
-            {docs.isLoading && <p className="text-sm text-ink/50">Loading…</p>}
-            {!docs.isLoading && recent.length === 0 && (
-              <div className="py-6 text-center">
-                <p className="text-sm text-ink/50">No documents yet.</p>
-                <Button asChild className="mt-4" size="sm">
-                  <Link href="/upload">Upload your first document</Link>
-                </Button>
-              </div>
-            )}
-            {recent.map((doc) => (
-              <Link
-                key={doc.id}
-                href={`/documents/${doc.id}`}
-                className="flex items-center justify-between gap-3 rounded-md px-2 py-2 hover:bg-ink/5"
-              >
-                <div className="min-w-0">
-                  <p className="truncate font-medium">{doc.original_filename}</p>
-                  <p className="text-xs text-ink/50">
-                    {doc.document_type ?? "Unknown"}
-                    {doc.confidence_score != null
-                      ? ` · ${formatConfidence(doc.confidence_score)}`
-                      : ""}
-                    {isLowConfidence(doc) ? " · uncertain" : ""}
-                  </p>
+          <Surface className="divide-y divide-border">
+            <QueryState
+              isLoading={docs.isLoading}
+              isError={docs.isError}
+              error={docs.error}
+              isEmpty={recent.length === 0}
+              onRetry={() => void docs.refetch()}
+              empty={
+                <div className="px-4 py-10 text-center">
+                  <p className="text-sm text-ink-muted">No documents yet.</p>
+                  <Button asChild className="mt-4" size="sm">
+                    <Link href="/upload">Upload your first document</Link>
+                  </Button>
                 </div>
-                <StatusChip status={doc.status} />
-              </Link>
-            ))}
-          </div>
+              }
+            >
+              {recent.map((doc) => (
+                <Link
+                  key={doc.id}
+                  href={`/documents/${doc.id}`}
+                  className="flex min-h-14 items-center justify-between gap-3 px-4 py-3 hover:bg-ink/[0.03]"
+                >
+                  <div className="min-w-0">
+                    <Filename name={doc.original_filename} className="font-medium" />
+                    <p className="text-sm text-ink-muted">
+                      {doc.document_type ?? "Unknown"}
+                      {doc.confidence_score != null
+                        ? ` · ${formatConfidence(doc.confidence_score)}`
+                        : ""}
+                      {isLowConfidence(doc) ? " · uncertain" : ""}
+                    </p>
+                  </div>
+                  <StatusChip status={doc.status} />
+                </Link>
+              ))}
+            </QueryState>
+          </Surface>
         </section>
-      </motion.div>
+      </div>
     </PageEnter>
   );
 }

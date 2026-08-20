@@ -3,6 +3,8 @@
 import { useRouter } from "next/navigation";
 
 import { PageEnter } from "@/components/page-enter";
+import { PageHeader } from "@/components/page-header";
+import { Surface } from "@/components/surface";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth/session";
 
@@ -12,24 +14,24 @@ export default function ProfilePage() {
 
   return (
     <PageEnter>
-      <h1 className="font-display text-3xl tracking-tight">Profile</h1>
-      <div className="mt-8 max-w-md space-y-3 rounded-xl border border-ink/10 bg-white/70 p-6">
-        <p>
-          <span className="text-ink/50">Name</span>
-          <br />
-          {user?.name}
-        </p>
-        <p>
-          <span className="text-ink/50">Email</span>
-          <br />
-          {user?.email}
-        </p>
-        <p>
-          <span className="text-ink/50">Role</span>
-          <br />
-          {user?.role}
-        </p>
+      <PageHeader title="Profile" description="Account details for this session." />
+      <Surface className="mt-8 max-w-md p-6">
+        <dl className="space-y-4">
+          <div>
+            <dt className="text-sm text-ink-muted">Name</dt>
+            <dd className="mt-1 break-words [overflow-wrap:anywhere] font-medium">{user?.name}</dd>
+          </div>
+          <div>
+            <dt className="text-sm text-ink-muted">Email</dt>
+            <dd className="mt-1 break-all font-medium">{user?.email}</dd>
+          </div>
+          <div>
+            <dt className="text-sm text-ink-muted">Role</dt>
+            <dd className="mt-1 font-medium capitalize">{user?.role}</dd>
+          </div>
+        </dl>
         <Button
+          className="mt-6"
           variant="outline"
           onClick={async () => {
             await logout();
@@ -38,7 +40,7 @@ export default function ProfilePage() {
         >
           Log out
         </Button>
-      </div>
+      </Surface>
     </PageEnter>
   );
 }

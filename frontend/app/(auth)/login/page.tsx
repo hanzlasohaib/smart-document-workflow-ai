@@ -7,12 +7,14 @@ import { Suspense, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
+import { FieldError } from "@/components/field-error";
 import { PageEnter } from "@/components/page-enter";
+import { Surface } from "@/components/surface";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth, type AdminOtpChallenge } from "@/lib/auth/session";
-import { safeReturnUrl } from "@/lib/utils";
+import { apiErrorMessage, safeReturnUrl } from "@/lib/utils";
 
 const credentialsSchema = z.object({
   email: z.string().email(),
@@ -64,7 +66,7 @@ function LoginForm() {
       }
       redirectAfterAuth(result.user.role);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed");
+      setError(apiErrorMessage(err, "Login failed"));
     }
   }
 
@@ -75,7 +77,7 @@ function LoginForm() {
       const user = await verifyAdminOtp(otpChallenge.challengeId, values.code.trim());
       redirectAfterAuth(user.role);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Verification failed");
+      setError(apiErrorMessage(err, "Verification failed"));
     }
   }
 
@@ -88,7 +90,7 @@ function LoginForm() {
       setOtpChallenge(next);
       otpForm.reset({ code: "" });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not resend code");
+      setError(apiErrorMessage(err, "Could not resend code"));
     } finally {
       setResendBusy(false);
     }
@@ -96,16 +98,20 @@ function LoginForm() {
 
   return (
     <PageEnter>
-      <div className="w-full max-w-md rounded-xl border border-ink/10 bg-white/80 p-8 shadow-sm backdrop-blur">
-        <p className="font-display text-2xl tracking-tight">Smart Document Workflow</p>
-        <h1 className="mt-2 text-lg text-ink/70">
-          {otpChallenge ? "Administrator verification" : "Log in to continue"}
+      <Surface className="w-full max-w-md p-6 sm:p-8">
+        <p className="text-sm font-medium text-ink-muted">Smart Document Workflow</p>
+        <h1 className="mt-1 font-display text-2xl tracking-[-0.03em] text-ink">
+          {otpChallenge ? "Administrator verification" : "Log in"}
         </h1>
+        <p className="mt-2 text-ink-muted">
+          {otpChallenge ? "Enter the code sent to your email." : "Continue to your portal."}
+        </p>
 
         {!otpChallenge ? (
           <form
             className="mt-8 space-y-4"
             onSubmit={credentialsForm.handleSubmit(onCredentialsSubmit)}
+            noValidate
           >
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
@@ -113,13 +119,15 @@ function LoginForm() {
                 id="email"
                 type="email"
                 autoComplete="email"
+                aria-invalid={Boolean(credentialsForm.formState.errors.email)}
+                aria-describedby={
+                  credentialsForm.formState.errors.email ? "email-error" : undefined
+                }
                 {...credentialsForm.register("email")}
               />
-              {credentialsForm.formState.errors.email && (
-                <p className="text-sm text-rose-700">
-                  {credentialsForm.formState.errors.email.message}
-                </p>
-              )}
+              <FieldError id="email-error">
+                {credentialsForm.formState.errors.email?.message}
+              </FieldError>
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
@@ -127,15 +135,17 @@ function LoginForm() {
                 id="password"
                 type="password"
                 autoComplete="current-password"
+                aria-invalid={Boolean(credentialsForm.formState.errors.password)}
+                aria-describedby={
+                  credentialsForm.formState.errors.password ? "password-error" : undefined
+                }
                 {...credentialsForm.register("password")}
               />
-              {credentialsForm.formState.errors.password && (
-                <p className="text-sm text-rose-700">
-                  {credentialsForm.formState.errors.password.message}
-                </p>
-              )}
+              <FieldError id="password-error">
+                {credentialsForm.formState.errors.password?.message}
+              </FieldError>
             </div>
-            {error && <p className="text-sm text-rose-700">{error}</p>}
+            <FieldError id="login-error">{error}</FieldError>
             <Button
               type="submit"
               className="w-full"
@@ -145,8 +155,8 @@ function LoginForm() {
             </Button>
           </form>
         ) : (
-          <form className="mt-8 space-y-4" onSubmit={otpForm.handleSubmit(onOtpSubmit)}>
-            <p className="text-sm text-ink/70">
+          <form className="mt-8 space-y-4" onSubmit={otpForm.handleSubmit(onOtpSubmit)} noValidate>
+            <p className="text-sm text-ink-muted">
               Enter the verification code sent to{" "}
               <span className="font-medium text-ink">
                 {otpChallenge.otpDestination || "hanzlamaan125@gmail.com"}
@@ -159,17 +169,17 @@ function LoginForm() {
                 id="code"
                 inputMode="numeric"
                 autoComplete="one-time-code"
+                aria-invalid={Boolean(otpForm.formState.errors.code)}
+                aria-describedby={otpForm.formState.errors.code ? "code-error" : undefined}
                 {...otpForm.register("code")}
               />
-              {otpForm.formState.errors.code && (
-                <p className="text-sm text-rose-700">{otpForm.formState.errors.code.message}</p>
-              )}
+              <FieldError id="code-error">{otpForm.formState.errors.code?.message}</FieldError>
             </div>
-            {error && <p className="text-sm text-rose-700">{error}</p>}
+            <FieldError id="otp-error">{error}</FieldError>
             <Button type="submit" className="w-full" disabled={otpForm.formState.isSubmitting}>
               {otpForm.formState.isSubmitting ? "Verifying…" : "Verify and continue"}
             </Button>
-            <div className="flex items-center justify-between gap-3 pt-1">
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
               <Button
                 type="button"
                 variant="outline"
@@ -179,9 +189,10 @@ function LoginForm() {
               >
                 {resendBusy ? "Sending…" : "Resend code"}
               </Button>
-              <button
+              <Button
                 type="button"
-                className="text-sm text-ink/60 underline underline-offset-4"
+                variant="ghost"
+                size="sm"
                 onClick={() => {
                   setOtpChallenge(null);
                   setError(null);
@@ -189,27 +200,27 @@ function LoginForm() {
                 }}
               >
                 Back to login
-              </button>
+              </Button>
             </div>
           </form>
         )}
 
         {!otpChallenge && (
-          <p className="mt-6 text-sm text-ink/60">
+          <p className="mt-6 text-sm text-ink-muted">
             New here?{" "}
-            <Link href="/signup" className="text-ink underline underline-offset-4">
+            <Link href="/signup" className="font-medium text-ink underline underline-offset-4">
               Create a user account
             </Link>
           </p>
         )}
-      </div>
+      </Surface>
     </PageEnter>
   );
 }
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="text-ink/60">Loading…</div>}>
+    <Suspense fallback={<p className="text-ink-muted" role="status">Loading…</p>}>
       <LoginForm />
     </Suspense>
   );

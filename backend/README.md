@@ -65,7 +65,7 @@ On Render: add `SENTRY_DSN` (and optionally `SENTRY_ENVIRONMENT=production`) as 
 
 ```bash
 cd backend
-# Windows: venv\Scripts\activate
+venv\Scripts\activate   # For Windows
 pip install -r requirements.txt
 cp .env.example .env   # then edit secrets
 alembic upgrade head

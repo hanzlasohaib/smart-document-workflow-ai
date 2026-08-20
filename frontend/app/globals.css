@@ -4,21 +4,101 @@
 
 :root {
   --ink: #0f1c2e;
+  --ink-muted: #3d4f63;
+  --ink-subtle: #4a5d73;
   --paper: #f3f5f8;
+  --surface: #ffffff;
   --accent: #e8a317;
+  --accent-hover: #d49210;
+  --accent-ink: #7a4e00;
+  --border: #c9d1dc;
+  --danger: #9f1239;
+  --danger-soft: #fff1f4;
+  --success: #065f46;
+  --success-soft: #ecfdf5;
+  --warn: #92400e;
+  --warn-soft: #fff7ed;
+  --info-soft: #eef3f8;
   --background: var(--paper);
   --foreground: var(--ink);
+  --ring: #8a5a00;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --shadow-surface: 0 1px 2px rgb(15 28 46 / 0.04), 0 8px 24px rgb(15 28 46 / 0.06);
+}
+
+html {
+  scroll-padding-top: 5rem;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
   font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  font-size: 1rem;
+  line-height: 1.6;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
+    env(safe-area-inset-left);
+}
+
+::selection {
+  background: rgb(232 163 23 / 0.28);
+  color: var(--ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 3px;
+}
+
+input,
+textarea,
+[contenteditable="true"] {
+  caret-color: var(--ink);
 }
 
 .bg-atmosphere {
   background:
-    radial-gradient(1200px 600px at 10% -10%, rgb(232 163 23 / 0.18), transparent 55%),
-    radial-gradient(900px 500px at 90% 0%, rgb(15 28 46 / 0.08), transparent 50%),
+    radial-gradient(1200px 600px at 10% -10%, rgb(232 163 23 / 0.16), transparent 55%),
+    radial-gradient(900px 500px at 90% 0%, rgb(15 28 46 / 0.07), transparent 50%),
     linear-gradient(180deg, #eef2f7 0%, var(--paper) 45%, #e8edf4 100%);
+}
+
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: 0;
+  z-index: 50;
+  transform: translateY(-120%);
+  border-radius: 0.5rem;
+  background: var(--ink);
+  color: var(--paper);
+  padding: 0.5rem 0.85rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.skip-link:focus {
+  transform: translateY(0.75rem);
+}
+
+.prose-measure {
+  max-width: 65ch;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .motion-safe-only {
+    animation: none !important;
+    transition-property: color, background-color, border-color, opacity, box-shadow !important;
+  }
+}
+
+@media (pointer: coarse) {
+  .touch-target {
+    min-height: 2.75rem;
+    min-width: 2.75rem;
+  }
 }

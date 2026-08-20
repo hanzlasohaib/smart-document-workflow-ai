@@ -5,12 +5,16 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { Filename } from "@/components/filename";
 import { PageEnter } from "@/components/page-enter";
+import { PageHeader } from "@/components/page-header";
+import { Surface } from "@/components/surface";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { api } from "@/lib/api/client";
 import type { Document } from "@/lib/api/types";
+import { useDelayedFlag } from "@/lib/use-delayed-flag";
 import { apiErrorMessage } from "@/lib/utils";
 
 export default function UploadPage() {
@@ -22,7 +26,9 @@ export default function UploadPage() {
     mutationFn: async (selected: File) => {
       const form = new FormData();
       form.append("file", selected);
-      const { data } = await api.post<Document>("/documents/upload", form);
+      const { data } = await api.post<Document>("/documents/upload", form, {
+        timeout: 120_000,
+      });
       return data;
     },
     onSuccess: (doc) => {
@@ -32,30 +38,45 @@ export default function UploadPage() {
     },
     onError: (err) => toast.error(apiErrorMessage(err, "Upload failed")),
   });
+  const slowUpload = useDelayedFlag(upload.isPending, 4000);
 
   return (
     <PageEnter>
-      <h1 className="font-display text-3xl tracking-tight">Upload</h1>
-      <p className="mt-2 text-ink/60">Submit a document for processing.</p>
-      <form
-        className="mt-8 max-w-lg space-y-4 rounded-xl border border-ink/10 bg-white/70 p-6"
-        onSubmit={(e) => {
-          e.preventDefault();
-          if (file) upload.mutate(file);
-        }}
-      >
-        <div className="space-y-2">
-          <Label htmlFor="file">File</Label>
-          <Input
-            id="file"
-            type="file"
-            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-          />
-        </div>
-        <Button type="submit" disabled={!file || upload.isPending}>
-          {upload.isPending ? "Uploading…" : "Upload"}
-        </Button>
-      </form>
+      <PageHeader title="Upload" description="Submit a document for processing." />
+      <Surface className="mt-8 max-w-lg p-6">
+        <form
+          className="space-y-5"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (file) upload.mutate(file);
+          }}
+        >
+          <div className="space-y-2">
+            <Label htmlFor="file">File</Label>
+            <Input
+              id="file"
+              type="file"
+              className="cursor-pointer file:me-3 file:rounded-md file:border-0 file:bg-ink file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-paper"
+              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+            />
+            {file ? (
+              <p className="text-sm text-ink-muted">
+                Selected: <Filename name={file.name} lines={2} />
+              </p>
+            ) : (
+              <p className="text-sm text-ink-muted">Choose a file to enable upload.</p>
+            )}
+          </div>
+          {slowUpload ? (
+            <p className="text-sm text-ink-subtle" role="status">
+              Still uploading. Large files can take a minute on a slow connection.
+            </p>
+          ) : null}
+          <Button type="submit" disabled={!file || upload.isPending}>
+            {upload.isPending ? "Uploading…" : "Upload"}
+          </Button>
+        </form>
+      </Surface>
     </PageEnter>
   );
 }

@@ -11,7 +11,18 @@ export function Providers({ children }: { children: ReactNode }) {
     () =>
       new QueryClient({
         defaultOptions: {
-          queries: { staleTime: 30_000, refetchOnWindowFocus: false },
+          queries: {
+            staleTime: 30_000,
+            refetchOnWindowFocus: false,
+            refetchOnReconnect: true,
+            retry: (count, error) => {
+              const status = (error as { response?: { status?: number } })?.response?.status;
+              if (status && status >= 400 && status < 500 && status !== 408 && status !== 429) {
+                return false;
+              }
+              return count < 2;
+            },
+          },
         },
       }),
   );

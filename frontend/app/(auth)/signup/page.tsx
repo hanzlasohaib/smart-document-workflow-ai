@@ -7,11 +7,14 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
+import { FieldError } from "@/components/field-error";
 import { PageEnter } from "@/components/page-enter";
+import { Surface } from "@/components/surface";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/lib/auth/session";
+import { apiErrorMessage } from "@/lib/utils";
 
 const schema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -40,30 +43,43 @@ export default function SignupPage() {
       }
       router.replace(result.user.role === "admin" ? "/admin" : "/dashboard");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Signup failed");
+      setError(apiErrorMessage(err, "Signup failed"));
     }
   }
 
   return (
     <PageEnter>
-      <div className="w-full max-w-md rounded-xl border border-ink/10 bg-white/80 p-8 shadow-sm backdrop-blur">
-        <p className="font-display text-2xl tracking-tight">Smart Document Workflow</p>
-        <h1 className="mt-2 text-lg text-ink/70">Create a user account</h1>
-        <p className="mt-1 text-sm text-ink/50">Administrators are seeded separately — no admin signup.</p>
-        <form className="mt-8 space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
+      <Surface className="w-full max-w-md p-6 sm:p-8">
+        <p className="text-sm font-medium text-ink-muted">Smart Document Workflow</p>
+        <h1 className="mt-1 font-display text-2xl tracking-[-0.03em] text-ink">
+          Create a user account
+        </h1>
+        <p className="mt-2 text-sm text-ink-muted">
+          Administrators are seeded separately — no admin signup.
+        </p>
+        <form className="mt-8 space-y-4" onSubmit={form.handleSubmit(onSubmit)} noValidate>
           <div className="space-y-2">
             <Label htmlFor="name">Name</Label>
-            <Input id="name" autoComplete="name" {...form.register("name")} />
-            {form.formState.errors.name && (
-              <p className="text-sm text-rose-700">{form.formState.errors.name.message}</p>
-            )}
+            <Input
+              id="name"
+              autoComplete="name"
+              aria-invalid={Boolean(form.formState.errors.name)}
+              aria-describedby={form.formState.errors.name ? "name-error" : undefined}
+              {...form.register("name")}
+            />
+            <FieldError id="name-error">{form.formState.errors.name?.message}</FieldError>
           </div>
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" autoComplete="email" {...form.register("email")} />
-            {form.formState.errors.email && (
-              <p className="text-sm text-rose-700">{form.formState.errors.email.message}</p>
-            )}
+            <Input
+              id="email"
+              type="email"
+              autoComplete="email"
+              aria-invalid={Boolean(form.formState.errors.email)}
+              aria-describedby={form.formState.errors.email ? "email-error" : undefined}
+              {...form.register("email")}
+            />
+            <FieldError id="email-error">{form.formState.errors.email?.message}</FieldError>
           </div>
           <div className="space-y-2">
             <Label htmlFor="password">Password</Label>
@@ -71,24 +87,24 @@ export default function SignupPage() {
               id="password"
               type="password"
               autoComplete="new-password"
+              aria-invalid={Boolean(form.formState.errors.password)}
+              aria-describedby={form.formState.errors.password ? "password-error" : undefined}
               {...form.register("password")}
             />
-            {form.formState.errors.password && (
-              <p className="text-sm text-rose-700">{form.formState.errors.password.message}</p>
-            )}
+            <FieldError id="password-error">{form.formState.errors.password?.message}</FieldError>
           </div>
-          {error && <p className="text-sm text-rose-700">{error}</p>}
+          <FieldError id="signup-error">{error}</FieldError>
           <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
             {form.formState.isSubmitting ? "Creating…" : "Sign up"}
           </Button>
         </form>
-        <p className="mt-6 text-sm text-ink/60">
+        <p className="mt-6 text-sm text-ink-muted">
           Already have an account?{" "}
-          <Link href="/login" className="text-ink underline underline-offset-4">
+          <Link href="/login" className="font-medium text-ink underline underline-offset-4">
             Log in
           </Link>
         </p>
-      </div>
+      </Surface>
     </PageEnter>
   );
 }

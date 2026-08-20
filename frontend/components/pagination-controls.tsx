@@ -11,10 +11,10 @@ type Props = {
 export function PaginationControls({ page, pages, onPageChange }: Props) {
   if (pages <= 1) return null;
   return (
-    <div className="mt-4 flex items-center justify-between gap-3 text-sm text-ink/60">
-      <span>
+    <nav aria-label="Pagination" className="mt-5 flex items-center justify-between gap-3 text-sm text-ink-muted">
+      <p aria-live="polite">
         Page {page} of {pages}
-      </span>
+      </p>
       <div className="flex gap-2">
         <Button
           size="sm"
@@ -33,6 +33,6 @@ export function PaginationControls({ page, pages, onPageChange }: Props) {
           Next
         </Button>
       </div>
-    </div>
+    </nav>
   );
 }

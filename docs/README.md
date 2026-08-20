@@ -4,6 +4,8 @@ Project documentation for **Smart Document Workflow AI**.
 
 | Area | Path | Role |
 |---|---|---|
+| Design system | [DESIGN.md](../DESIGN.md) | Visual source of truth (The Review Docket) |
+| AI frontend workflow | [CURSOR_WORKFLOW.md](../CURSOR_WORKFLOW.md) | Emil → Impeccable → TasteSkill order, rules, and example prompts |
 | Implementation roadmap | [IMPLEMENTATION_ROADMAP.md](./IMPLEMENTATION_ROADMAP.md) | P0–P3 execution checklist and branching |
 | Implementation audit | [audit/AUDIT_REPORT.md](./audit/AUDIT_REPORT.md) | Source of truth for the **audited** codebase baseline |
 | Product Architecture Specification | [pas/README.md](./pas/README.md) | Authoritative architectural source of truth (**PAS 1.0.0 Frozen**) |

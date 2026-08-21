@@ -40,3 +40,7 @@ When product, design, and skill-pack advice conflict: **PRODUCT.md → DESIGN.md
 - **Backend:** FastAPI, PostgreSQL, SQLAlchemy, Alembic
 - **Frontend:** Next.js App Router, TypeScript, Tailwind, ShadCN/Radix
 - **Local stack:** Docker Compose (web + API + Postgres)
+
+## Releases
+
+See [CHANGELOG.md](./CHANGELOG.md) for notable changes by version.

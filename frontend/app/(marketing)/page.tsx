@@ -1,7 +1,23 @@
 import Link from "next/link";
 
 import { PageEnter } from "@/components/page-enter";
+import { ProcessSteps } from "@/components/process-steps";
 import { Button } from "@/components/ui/button";
+
+const landingSteps = [
+  {
+    title: "Upload",
+    body: "Submit a PDF or image. The pipeline runs OCR, classification, and field extraction.",
+  },
+  {
+    title: "Review",
+    body: "When extraction is uncertain or policy requires a person, fields stay in review until verified.",
+  },
+  {
+    title: "Approve",
+    body: "Admins approve or reject as a separate business decision. Extraction does not decide for them.",
+  },
+];
 
 export default function LandingPage() {
   return (
@@ -35,6 +51,12 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+      <ProcessSteps
+        headingId="landing-process"
+        heading="From upload to approval"
+        description="Classification and extraction speed the file. A person still verifies fields and approvals."
+        steps={landingSteps}
+      />
     </PageEnter>
   );
 }

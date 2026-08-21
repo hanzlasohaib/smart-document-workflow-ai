@@ -51,6 +51,6 @@ export function isLowConfidence(doc: Document | null | undefined): boolean {
 }
 
 export function formatConfidence(score: number | null | undefined): string {
-  if (score == null) return "—";
+  if (score == null) return "Not scored";
   return `${(score * 100).toFixed(0)}%`;
 }

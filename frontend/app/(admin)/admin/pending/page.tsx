@@ -6,6 +6,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { EmptyState } from "@/components/empty-state";
 import { Filename } from "@/components/filename";
 import { PageEnter } from "@/components/page-enter";
 import { PageHeader } from "@/components/page-header";
@@ -67,16 +68,21 @@ export default function PendingApprovalsPage() {
           isEmpty={items.length === 0}
           onRetry={() => void pending.refetch()}
           empty={
-            <Surface className="border-dashed px-4 py-10 text-center shadow-none">
-              <p className="text-sm text-ink-muted">Queue is clear.</p>
-              <Button asChild className="mt-4" size="sm" variant="outline">
-                <Link href="/admin/documents">Browse all documents</Link>
-              </Button>
+            <Surface className="border-dashed shadow-none">
+              <EmptyState
+                action={
+                  <Button asChild size="sm" variant="outline">
+                    <Link href="/admin/documents">Browse all documents</Link>
+                  </Button>
+                }
+              >
+                Queue is clear.
+              </EmptyState>
             </Surface>
           }
         >
           {items.map((doc) => (
-            <Surface key={doc.id} className="flex flex-wrap items-center justify-between gap-3 p-4">
+            <Surface key={doc.id} className="flex flex-wrap items-center justify-between gap-4 p-4">
               <div className="min-w-0">
                 <Link
                   href={`/admin/review/${doc.id}`}
@@ -84,7 +90,7 @@ export default function PendingApprovalsPage() {
                 >
                   <Filename name={doc.original_filename} lines={2} />
                 </Link>
-                <p className="mt-1 text-sm text-ink-muted">
+                <p className="mt-1 text-sm leading-[1.6] text-ink-muted">
                   {doc.document_type ?? "Unknown"}
                   {doc.confidence_score != null ? ` · ${formatConfidence(doc.confidence_score)}` : ""}
                   {isLowConfidence(doc) ? " · uncertain" : ""}

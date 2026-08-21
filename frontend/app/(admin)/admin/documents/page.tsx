@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useState } from "react";
 
+import { EmptyState } from "@/components/empty-state";
 import { Filename } from "@/components/filename";
 import { PageEnter } from "@/components/page-enter";
 import { PageHeader } from "@/components/page-header";
@@ -22,7 +23,7 @@ const PAGE_SIZE = 20;
 function DocumentMeta({ doc }: { doc: Document }) {
   return (
     <>
-      {doc.document_type ?? "—"}
+      {doc.document_type ?? "Unknown"}
       {doc.confidence_score != null ? ` · ${formatConfidence(doc.confidence_score)}` : ""}
       {isLowConfidence(doc) ? " · uncertain" : ""}
     </>
@@ -43,12 +44,15 @@ export default function AdminDocumentsPage() {
 
   const items = docs.data?.items ?? [];
   const empty = (
-    <div className="px-4 py-10 text-center">
-      <p className="text-sm text-ink-muted">No documents.</p>
-      <Button asChild className="mt-4" size="sm" variant="outline">
-        <Link href="/admin/pending">Check pending queue</Link>
-      </Button>
-    </div>
+    <EmptyState
+      action={
+        <Button asChild size="sm" variant="outline">
+          <Link href="/admin/pending">Check pending queue</Link>
+        </Button>
+      }
+    >
+      No documents.
+    </EmptyState>
   );
 
   return (
@@ -76,7 +80,7 @@ export default function AdminDocumentsPage() {
               >
                 <Filename name={doc.original_filename} lines={2} />
               </Link>
-              <p className="mt-1 text-sm text-ink-muted">
+              <p className="mt-2 text-sm leading-[1.6] text-ink-muted">
                 #{doc.id} · <DocumentMeta doc={doc} />
               </p>
               <div className="mt-3">
@@ -97,20 +101,31 @@ export default function AdminDocumentsPage() {
           empty={empty}
         >
           <table className="w-full min-w-0 text-start text-sm">
+            <caption className="sr-only">All documents</caption>
             <thead className="border-b border-border text-ink-muted">
               <tr>
-                <th className="px-4 py-3 font-medium">ID</th>
-                <th className="px-4 py-3 font-medium">File</th>
-                <th className="px-4 py-3 font-medium">Type</th>
-                <th className="px-4 py-3 font-medium">Confidence</th>
-                <th className="px-4 py-3 font-medium">Status</th>
+                <th scope="col" className="px-4 py-3 text-start font-medium">
+                  ID
+                </th>
+                <th scope="col" className="px-4 py-3 text-start font-medium">
+                  File
+                </th>
+                <th scope="col" className="px-4 py-3 text-start font-medium">
+                  Type
+                </th>
+                <th scope="col" className="px-4 py-3 text-start font-medium">
+                  Confidence
+                </th>
+                <th scope="col" className="px-4 py-3 text-start font-medium">
+                  Status
+                </th>
               </tr>
             </thead>
             <tbody>
               {items.map((doc) => (
-                <tr key={doc.id} className="border-b border-border/70 last:border-0">
-                  <td className="px-4 py-3 tabular-nums">{doc.id}</td>
-                  <td className="max-w-xs px-4 py-3">
+                <tr key={doc.id} className="border-b border-border last:border-0 hover:bg-ink/[0.03]">
+                  <td className="px-4 py-4 tabular-nums">{doc.id}</td>
+                  <td className="max-w-xs px-4 py-4">
                     <Link
                       href={`/admin/review/${doc.id}`}
                       className="underline-offset-4 hover:underline"
@@ -118,12 +133,12 @@ export default function AdminDocumentsPage() {
                       <Filename name={doc.original_filename} />
                     </Link>
                   </td>
-                  <td className="px-4 py-3">{doc.document_type ?? "—"}</td>
-                  <td className="px-4 py-3 tabular-nums">
+                  <td className="px-4 py-4">{doc.document_type ?? "Unknown"}</td>
+                  <td className="px-4 py-4 tabular-nums">
                     {formatConfidence(doc.confidence_score)}
                     {isLowConfidence(doc) ? " · uncertain" : ""}
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-4">
                     <StatusChip status={doc.status} />
                   </td>
                 </tr>

@@ -6,6 +6,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { EmptyState } from "@/components/empty-state";
 import { Filename } from "@/components/filename";
 import { PageEnter } from "@/components/page-enter";
 import { PageHeader } from "@/components/page-header";
@@ -65,7 +66,7 @@ export default function MyDocumentsPage() {
           <Link href="/upload">Upload</Link>
         </Button>
       </PageHeader>
-      <Surface className="mt-8 divide-y divide-border">
+      <Surface className="mt-8">
         <QueryState
           isLoading={docs.isLoading}
           isError={docs.isError}
@@ -73,40 +74,45 @@ export default function MyDocumentsPage() {
           isEmpty={items.length === 0}
           onRetry={() => void docs.refetch()}
           empty={
-            <div className="px-4 py-10 text-center">
-              <p className="text-sm text-ink-muted">No documents yet.</p>
-              <Button asChild className="mt-4" size="sm">
-                <Link href="/upload">Upload your first document</Link>
-              </Button>
-            </div>
+            <EmptyState
+              action={
+                <Button asChild size="sm">
+                  <Link href="/upload">Upload your first document</Link>
+                </Button>
+              }
+            >
+              No documents yet.
+            </EmptyState>
           }
         >
-          {items.map((doc) => (
-            <div
-              key={doc.id}
-              className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 hover:bg-ink/[0.03]"
-            >
-              <Link href={`/documents/${doc.id}`} className="min-w-0 flex-1">
-                <Filename name={doc.original_filename} className="font-medium" />
-                <p className="text-sm text-ink-muted">
-                  {doc.document_type ?? "Unknown type"}
-                  {doc.confidence_score != null ? ` · ${formatConfidence(doc.confidence_score)}` : ""}
-                  {isLowConfidence(doc) ? " · uncertain" : ""}
-                </p>
-              </Link>
-              <div className="flex flex-wrap items-center gap-2">
-                <StatusChip status={doc.status} />
-                <Button
-                  size="sm"
-                  variant="outline"
-                  disabled={remove.isPending}
-                  onClick={() => setPendingDelete(doc)}
-                >
-                  Delete
-                </Button>
-              </div>
-            </div>
-          ))}
+          <ul className="divide-y divide-border">
+            {items.map((doc) => (
+              <li
+                key={doc.id}
+                className="flex flex-wrap items-center justify-between gap-3 px-4 py-4 hover:bg-ink/[0.03]"
+              >
+                <Link href={`/documents/${doc.id}`} className="min-w-0 flex-1">
+                  <Filename name={doc.original_filename} className="font-medium" />
+                  <p className="text-sm leading-[1.6] text-ink-muted">
+                    {doc.document_type ?? "Unknown type"}
+                    {doc.confidence_score != null ? ` · ${formatConfidence(doc.confidence_score)}` : ""}
+                    {isLowConfidence(doc) ? " · uncertain" : ""}
+                  </p>
+                </Link>
+                <div className="flex flex-wrap items-center gap-2">
+                  <StatusChip status={doc.status} />
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={remove.isPending}
+                    onClick={() => setPendingDelete(doc)}
+                  >
+                    Delete
+                  </Button>
+                </div>
+              </li>
+            ))}
+          </ul>
         </QueryState>
       </Surface>
       <PaginationControls page={page} pages={docs.data?.pages ?? 0} onPageChange={setPage} />

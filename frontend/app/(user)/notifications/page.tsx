@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { EmptyState } from "@/components/empty-state";
 import { PageEnter } from "@/components/page-enter";
 import { PageHeader } from "@/components/page-header";
 import { PaginationControls } from "@/components/pagination-controls";
@@ -72,11 +73,16 @@ export default function NotificationsPage() {
           isEmpty={items.length === 0}
           onRetry={() => void list.refetch()}
           empty={
-            <Surface className="border-dashed px-4 py-10 text-center shadow-none">
-              <p className="text-sm text-ink-muted">No notifications yet.</p>
-              <Button asChild className="mt-4" size="sm">
-                <Link href="/upload">Upload a document</Link>
-              </Button>
+            <Surface className="border-dashed shadow-none">
+              <EmptyState
+                action={
+                  <Button asChild size="sm">
+                    <Link href="/upload">Upload a document</Link>
+                  </Button>
+                }
+              >
+                No notifications yet.
+              </EmptyState>
             </Surface>
           }
         >
@@ -89,13 +95,13 @@ export default function NotificationsPage() {
             >
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="break-words [overflow-wrap:anywhere] font-medium">
+                  <p className="font-medium [overflow-wrap:anywhere]">
                     {n.title}
                     {!n.is_read && (
                       <span className="ms-2 text-xs font-semibold text-accent-ink">Unread</span>
                     )}
                   </p>
-                  <p className="mt-1 break-words [overflow-wrap:anywhere] text-sm text-ink-muted">
+                  <p className="mt-1 text-sm text-ink-muted [overflow-wrap:anywhere]">
                     {n.message}
                   </p>
                   {n.document_id != null && (

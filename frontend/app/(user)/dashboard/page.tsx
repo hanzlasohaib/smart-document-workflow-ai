@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 
+import { EmptyState } from "@/components/empty-state";
 import { Filename } from "@/components/filename";
 import { PageEnter } from "@/components/page-enter";
 import { PageHeader } from "@/components/page-header";
@@ -45,7 +46,7 @@ export default function UserDashboardPage() {
       <div className="space-y-8">
         <PageHeader
           title={`Welcome, ${user?.name ?? "there"}`}
-          description="Your documents and recent activity."
+          description="Upload a document, check recent files, and open anything that needs review."
         />
         <div className="flex flex-wrap gap-3">
           <Button asChild>
@@ -72,19 +73,22 @@ export default function UserDashboardPage() {
               isEmpty={recent.length === 0}
               onRetry={() => void docs.refetch()}
               empty={
-                <div className="px-4 py-10 text-center">
-                  <p className="text-sm text-ink-muted">No documents yet.</p>
-                  <Button asChild className="mt-4" size="sm">
-                    <Link href="/upload">Upload your first document</Link>
-                  </Button>
-                </div>
+                <EmptyState
+                  action={
+                    <Button asChild size="sm">
+                      <Link href="/upload">Upload your first document</Link>
+                    </Button>
+                  }
+                >
+                  No documents yet.
+                </EmptyState>
               }
             >
               {recent.map((doc) => (
                 <Link
                   key={doc.id}
                   href={`/documents/${doc.id}`}
-                  className="flex min-h-14 items-center justify-between gap-3 px-4 py-3 hover:bg-ink/[0.03]"
+                  className="flex min-h-14 items-center justify-between gap-3 px-4 py-4 hover:bg-ink/[0.03]"
                 >
                   <div className="min-w-0">
                     <Filename name={doc.original_filename} className="font-medium" />

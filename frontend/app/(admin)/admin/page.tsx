@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 
+import { EmptyState } from "@/components/empty-state";
 import { Filename } from "@/components/filename";
 import { PageEnter } from "@/components/page-enter";
 import { PageHeader } from "@/components/page-header";
@@ -56,19 +57,22 @@ export default function AdminDashboardPage() {
               isEmpty={(pending.data?.total ?? 0) === 0}
               onRetry={() => void pending.refetch()}
               empty={
-                <div className="px-4 py-10 text-center">
-                  <p className="text-sm text-ink-muted">Queue is clear.</p>
-                  <Button asChild className="mt-4" size="sm" variant="outline">
-                    <Link href="/admin/documents">Browse all documents</Link>
-                  </Button>
-                </div>
+                <EmptyState
+                  action={
+                    <Button asChild size="sm" variant="outline">
+                      <Link href="/admin/documents">Browse all documents</Link>
+                    </Button>
+                  }
+                >
+                  Queue is clear.
+                </EmptyState>
               }
             >
               {(pending.data?.items ?? []).map((doc) => (
                 <Link
                   key={doc.id}
                   href={`/admin/review/${doc.id}`}
-                  className="flex min-h-14 items-center justify-between gap-3 px-4 py-3 hover:bg-ink/[0.03]"
+                  className="flex min-h-14 items-center justify-between gap-3 px-4 py-4 hover:bg-ink/[0.03]"
                 >
                   <Filename name={doc.original_filename} className="font-medium" />
                   <StatusChip status={doc.status} />

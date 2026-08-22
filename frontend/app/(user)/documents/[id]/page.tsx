@@ -7,10 +7,12 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { EmptyState } from "@/components/empty-state";
 import { Filename } from "@/components/filename";
 import { LowConfidenceCallout } from "@/components/low-confidence-callout";
 import { PageEnter } from "@/components/page-enter";
 import { QueryState } from "@/components/query-state";
+import { SourceText } from "@/components/source-text";
 import { StatusChip } from "@/components/status-chip";
 import { Surface } from "@/components/surface";
 import { Button } from "@/components/ui/button";
@@ -95,11 +97,16 @@ export default function DocumentDetailPage() {
   if (notFound && !docQuery.isLoading) {
     return (
       <PageEnter>
-        <Surface className="px-4 py-10 text-center">
-          <p className="text-sm text-ink-muted">This document was not found.</p>
-          <Button asChild className="mt-4" size="sm" variant="outline">
-            <Link href="/documents">Back to documents</Link>
-          </Button>
+        <Surface className="px-4 py-10">
+          <EmptyState
+            action={
+              <Button asChild size="sm" variant="outline">
+                <Link href="/documents">Back to documents</Link>
+              </Button>
+            }
+          >
+            This document was not found.
+          </EmptyState>
         </Surface>
       </PageEnter>
     );
@@ -107,22 +114,20 @@ export default function DocumentDetailPage() {
 
   return (
     <PageEnter>
-      <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
-          <h1 className="font-display text-[1.75rem] leading-[1.15] tracking-[-0.03em] md:text-3xl">
+      <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
+        <div className="min-w-0 max-w-2xl">
+          <h1 className="font-display text-[1.75rem] leading-[1.15] tracking-[-0.03em] md:text-[1.875rem]">
             <Filename
               name={doc?.original_filename ?? `Document #${validId ? docId : ""}`}
               lines={3}
               className="block"
             />
           </h1>
-          <p className="mt-2 text-sm text-ink-muted">
+          <p className="mt-2 text-pretty text-base leading-[1.6] text-ink-muted">
             {doc?.document_type ?? "Processing"}
             {doc?.confidence_score != null
               ? ` · ${formatConfidence(doc.confidence_score)} confidence`
               : ""}
-            {" · "}
-            review extracted fields
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -133,69 +138,82 @@ export default function DocumentDetailPage() {
             disabled={remove.isPending || !doc}
             onClick={() => setConfirmDelete(true)}
           >
-            Delete
+            {remove.isPending ? "Deleting…" : "Delete"}
           </Button>
         </div>
       </div>
 
-      {isLowConfidence(doc) && <LowConfidenceCallout className="mb-6" />}
+      {isLowConfidence(doc) && <LowConfidenceCallout className="mb-8" />}
 
-      <Surface className="divide-y divide-border px-4">
-        <QueryState
-          isLoading={docQuery.isLoading || fields.isLoading}
-          isError={docQuery.isError || fields.isError}
-          error={docQuery.error ?? fields.error}
-          isEmpty={!fields.isLoading && fieldRows.length === 0}
-          onRetry={() => {
-            void docQuery.refetch();
-            void fields.refetch();
-          }}
-          loadingLabel="Loading fields…"
-          empty={
-            <p className="py-5 text-sm text-ink-muted">
-              No extracted fields yet. If status is processing, this will fill in shortly.
-            </p>
-          }
+      <section aria-labelledby="extracted-fields-heading">
+        <h2
+          id="extracted-fields-heading"
+          className="font-display text-2xl tracking-[-0.03em] text-ink"
         >
-          {fieldRows.map((field) => {
-            const inputId = `field-${field.id}`;
-            return (
-              <div
-                key={field.id}
-                className="grid gap-2 py-4 md:grid-cols-[minmax(0,160px)_1fr] md:items-center"
-              >
-                <Label htmlFor={inputId} className="break-words [overflow-wrap:anywhere] text-sm">
-                  {field.field_name}
-                  {field.is_verified && (
-                    <span className="ms-2 text-xs font-normal text-ink-subtle">Verified</span>
-                  )}
-                </Label>
-                <Input
-                  id={inputId}
-                  value={drafts[field.id] ?? field.field_value ?? ""}
-                  onChange={(e) =>
-                    setDrafts((prev) => ({ ...prev, [field.id]: e.target.value }))
-                  }
-                />
+          Extracted fields
+        </h2>
+        <p className="mt-2 text-sm leading-[1.6] text-ink-muted">
+          Verify or correct values before they are treated as reviewed.
+        </p>
+        <Surface className="mt-4 divide-y divide-border px-4">
+          <QueryState
+            isLoading={docQuery.isLoading || fields.isLoading}
+            isError={docQuery.isError || fields.isError}
+            error={docQuery.error ?? fields.error}
+            isEmpty={!fields.isLoading && fieldRows.length === 0}
+            onRetry={() => {
+              void docQuery.refetch();
+              void fields.refetch();
+            }}
+            loadingLabel="Loading fields…"
+            empty={
+              <p className="py-5 text-sm leading-[1.6] text-ink-muted">
+                No extracted fields yet. If status is processing, this will fill in shortly.
+              </p>
+            }
+          >
+            {fieldRows.map((field) => {
+              const inputId = `field-${field.id}`;
+              return (
+                <div
+                  key={field.id}
+                  className="grid gap-2 py-4 md:grid-cols-[minmax(0,12rem)_1fr] md:items-center"
+                >
+                  <Label htmlFor={inputId} className="text-sm [overflow-wrap:anywhere]">
+                    {field.field_name}
+                    {field.is_verified && (
+                      <span className="ms-2 text-xs font-normal text-ink-subtle">Verified</span>
+                    )}
+                  </Label>
+                  <Input
+                    id={inputId}
+                    disabled={verifyAll.isPending}
+                    value={drafts[field.id] ?? field.field_value ?? ""}
+                    onChange={(e) =>
+                      setDrafts((prev) => ({ ...prev, [field.id]: e.target.value }))
+                    }
+                  />
+                </div>
+              );
+            })}
+            {fieldRows.length > 0 && (
+              <div className="flex justify-end py-4">
+                <Button
+                  disabled={verifyAll.isPending || fieldRows.length === 0}
+                  onClick={() => verifyAll.mutate()}
+                >
+                  {verifyAll.isPending
+                    ? "Saving…"
+                    : hasDirty
+                      ? "Save & verify all"
+                      : "Verify all"}
+                </Button>
               </div>
-            );
-          })}
-          {fieldRows.length > 0 && (
-            <div className="flex justify-end py-4">
-              <Button
-                disabled={verifyAll.isPending || fieldRows.length === 0}
-                onClick={() => verifyAll.mutate()}
-              >
-                {verifyAll.isPending
-                  ? "Saving…"
-                  : hasDirty
-                    ? "Save & verify all"
-                    : "Verify all"}
-              </Button>
-            </div>
-          )}
-        </QueryState>
-      </Surface>
+            )}
+          </QueryState>
+        </Surface>
+      </section>
+      {doc?.raw_text ? <SourceText text={doc.raw_text} /> : null}
       <ConfirmDialog
         open={confirmDelete}
         title="Delete document"

@@ -74,6 +74,44 @@ jobs:
           NEXT_PUBLIC_API_URL: "http://localhost:8000/api/v1"
           API_INTERNAL_URL: "http://localhost:8000/api/v1"
         run: npm run build
+  lighthouse:
+    runs-on: ubuntu-latest
+    needs:
+      - frontend
+    defaults:
+      run:
+        working-directory: frontend
+    env:
+      NEXT_PUBLIC_API_URL: "http://localhost:8000/api/v1"
+      API_INTERNAL_URL: "http://localhost:8000/api/v1"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Cache Lighthouse CI
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm/_npx
+            ~/.cache/lighthouse
+          key: lighthouse-${{ runner.os }}-lhci-0.15-${{ hashFiles('frontend/package-lock.json', 'frontend/lighthouserc.js') }}
+      - name: Install dependencies
+        run: npm ci
+      - name: Build
+        run: npm run build
+      - name: Run Lighthouse CI
+        run: npx --yes @lhci/cli@0.15.x autorun
+      - name: Upload Lighthouse HTML reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-reports
+          path: frontend/lhci-reports/**/*.html
+          if-no-files-found: warn
   docker:
     runs-on: ubuntu-latest
     needs:
